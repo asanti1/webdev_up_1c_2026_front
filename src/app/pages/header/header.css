@@ -1,0 +1,42 @@
+.navbar-brand {
+  letter-spacing: 0.5px;
+}
+
+.search-container {
+  width: 100%;
+}
+
+.search-container .input-group {
+  width: 100%;
+}
+
+.search-container input {
+  min-width: 0;
+}
+
+.input-group-text,
+.form-control {
+  height: 44px;
+}
+
+.form-control:focus {
+  box-shadow: none;
+  border-color: var(--bs-border-color);
+}
+
+.dropdown-menu {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.dropdown-item {
+  padding: 0.6rem 1rem;
+}
+
+@media (min-width: 992px) {
+
+  .search-container {
+    width: 340px;
+  }
+
+}

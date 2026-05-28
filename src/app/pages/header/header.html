@@ -1,0 +1,85 @@
+<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm py-3">
+  <div class="container">
+
+    <a class="navbar-brand fw-bold fs-4 text-primary" routerLink="/">
+      TravelUP
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+      aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse mt-3 mt-lg-0" id="navbarContent">
+
+      <form class="d-flex my-3 my-lg-0 mx-lg-4 search-container">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0">
+            <i class="bi bi-search"></i>
+          </span>
+
+          <input #searchInput type="text" class="form-control border-start-0" placeholder="Buscar destinos..."
+            (input)="onSearch($event)" (keydown.enter)="submitSearch(searchInput.value, $event)" />
+        </div>
+      </form>
+
+      <div class="d-flex flex-column flex-lg-row gap-2 ms-lg-3">
+
+        @if (!isAuthenticated()) {
+
+        <a routerLink="/login" class="btn btn-outline-primary">
+          Iniciar sesión
+        </a>
+
+        <a routerLink="/register" class="btn btn-primary">
+          Registrarse
+        </a>
+
+        } @else {
+
+        <div class="dropdown">
+
+          <button class="btn btn-light border dropdown-toggle d-flex align-items-center gap-2 w-100" type="button"
+            data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle fs-5"></i>
+
+            <span>
+              {{ user()?.firstName }}
+            </span>
+          </button>
+
+          <ul class="dropdown-menu dropdown-menu-end">
+
+            <li>
+              <a class="dropdown-item" routerLink="/profile">
+                Mi perfil
+              </a>
+            </li>
+
+            <li>
+              <a class="dropdown-item" routerLink="/reservations">
+                Mis reservas
+              </a>
+            </li>
+
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <button class="dropdown-item text-danger" (click)="logout()">
+                Cerrar sesión
+              </button>
+            </li>
+
+          </ul>
+
+        </div>
+
+        }
+
+      </div>
+
+    </div>
+  </div>
+</nav>

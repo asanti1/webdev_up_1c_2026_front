@@ -1,0 +1,43 @@
+@if (totalPages() > 1) {
+  <nav class="mt-5" aria-label="Paginación de paquetes">
+    <ul class="pagination justify-content-center mb-0">
+
+      <li class="page-item" [class.disabled]="currentPage() === 1">
+        <button
+          type="button"
+          class="page-link"
+          (click)="previous()"
+        >
+          Anterior
+        </button>
+      </li>
+
+      @for (page of pages(); track $index) {
+        <li
+          class="page-item"
+          [class.active]="page === currentPage()"
+          [class.disabled]="page === '...'"
+        >
+          <button
+            type="button"
+            class="page-link"
+            (click)="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+        </li>
+      }
+
+      <li class="page-item" [class.disabled]="currentPage() === totalPages()">
+        <button
+          type="button"
+          class="page-link"
+          (click)="next()"
+        >
+          Siguiente
+        </button>
+      </li>
+
+    </ul>
+  </nav>
+}

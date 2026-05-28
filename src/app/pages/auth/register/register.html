@@ -1,0 +1,160 @@
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center">
+
+  <div class="row w-100 justify-content-center">
+
+    <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
+
+      <div class="card shadow">
+
+        <div class="card-body p-4">
+
+          <button type="button" class="btn btn-link text-decoration-none px-0 mb-4" (click)="goBack()">
+            <i class="bi bi-arrow-left"></i>
+            Volver
+          </button>
+
+          <form (submit)="onSubmit($event)" class="mx-auto">
+
+            <div class="mb-3">
+              <label class="form-label">
+                Nombre:
+              </label>
+              <input type="text" [formField]="registerForm.firstName" class="form-control" placeholder="Juan">
+
+            </div>
+            @if (registerForm.firstName().touched() && registerForm.firstName().invalid()) {
+            <ul class="text-danger small mt-1 mb-0 ps-0 list-unstyled">
+              @for (err of registerForm.firstName().errors(); track
+              err) {
+              <li>{{err.message }}</li>
+              }
+            </ul>
+            }
+
+
+            <div class="mb-3">
+              <label class="form-label">
+                Apellido:
+              </label>
+              <input type="text" [formField]="registerForm.lastName" class="form-control" placeholder="Perez">
+
+            </div>
+            @if (registerForm.lastName().touched() && registerForm.lastName().invalid()) {
+            <ul class="text-danger small mt-1 mb-0 ps-0 list-unstyled">
+              @for (err of registerForm.lastName().errors(); track
+              err) {
+              <li>{{err.message }}</li>
+              }
+            </ul>
+            }
+
+            <div class="mb-3">
+              <label class="form-label">
+                Edad:
+              </label>
+              <input type="number" [formField]="registerForm.age" class="form-control">
+
+            </div>
+            @if (registerForm.age().touched() && registerForm.age().invalid()) {
+            <ul class="text-danger small mt-1 mb-0 ps-0 list-unstyled">
+              @for (err of registerForm.age().errors(); track err) {
+              <li>{{err.message }}</li>
+              }
+            </ul>
+            }
+
+
+            <div class="mb-3">
+              <label class="form-label">
+                Email:
+              </label>
+              <input type="email" [formField]="registerForm.email" class="form-control">
+
+            </div>
+            @if (registerForm.email().touched() && registerForm.email().invalid()) {
+            <ul class="text-danger small mt-1 mb-0 ps-0 list-unstyled">
+              @for (err of registerForm.email().errors(); track
+              err) {
+              <li>{{err.message }}</li>
+              }
+            </ul>
+            }
+
+            <div class="mb-3">
+              <label class="form-label">
+                Teléfono:
+              </label>
+
+              <input type="text" [formField]="registerForm.cellphoneNumber" class="form-control"
+                placeholder="2216000000" />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">
+                Password:
+              </label>
+              <input type="password" [formField]="registerForm.password" class="form-control">
+
+            </div>
+
+            @if (registerForm.password().touched() && registerForm.password().invalid()) {
+            <ul class="text-danger small mt-1 mb-0 ps-0 list-unstyled">
+              @for (err of registerForm.password().errors(); track err) {
+              <li>{{err.message }}</li>
+              }
+            </ul>
+            }
+
+            <div class="">
+              <label class="form-label">
+                Confirmar password:
+              </label>
+              <input type="password" [formField]="registerForm.confirmPassword" class="form-control">
+
+            </div>
+
+            @if (registerForm.confirmPassword().touched() && registerForm.confirmPassword().invalid()) {
+            <ul class="text-danger small mt-1 ps-0 list-unstyled">
+              @for (err of registerForm.confirmPassword().errors(); track err) {
+              <li>{{err.message }}</li>
+              }
+            </ul>
+            }
+
+            <div class="mb-3 mt-1 form-floating">
+              <select [formField]="registerForm.countryId" class="form-select">
+                <option value="">Seleccione su pais</option>
+                @for (c of countries(); track c.id) {
+                <option [value]="c.id">{{ c.name }}</option>
+                }
+              </select>
+            </div>
+
+            @if (isLoadingCountries()) {
+            <p class="small text-muted">
+              Cargando países...
+            </p>
+            }
+
+            @if (countriesError()) {
+            <p class="small text-danger">
+              {{ countriesError() }}
+            </p>
+            }
+
+
+            <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+
+          </form>
+
+          <a class="mt-1 link-opacity-25-hover" routerLink="/login"> ¿Ya tenés cuenta? Iniciar sesión </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

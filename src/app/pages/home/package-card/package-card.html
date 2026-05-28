@@ -1,0 +1,44 @@
+<article class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden pack()age-card">
+
+  <img [src]="pack().imageUrl" [alt]="pack().title" class="card-img-top package-img" />
+
+  <div class="card-body d-flex flex-column">
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="badge text-bg-primary">
+        {{ pack().category }}
+      </span>
+
+      <span class="small text-muted">
+        {{ pack().availableSlots }} lugares
+      </span>
+    </div>
+
+    <h2 class="h5 fw-bold mb-2">
+      {{ pack().title }}
+    </h2>
+
+    <p class="text-muted small mb-3">
+      <i class="bi bi-geo-alt"></i>
+      {{ pack().destination }}
+    </p>
+
+    <div class="mt-auto d-flex justify-content-between align-items-end gap-3">
+      <div>
+        <p class="text-muted small mb-0">
+          Desde
+        </p>
+
+        <p class="fw-bold fs-5 mb-0">
+          ${{ pack().price }}
+        </p>
+      </div>
+
+      <button class="btn btn-outline-primary btn-sm">
+        Ver más
+      </button>
+    </div>
+
+  </div>
+
+</article>

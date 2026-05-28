@@ -1,0 +1,7 @@
+.error-list {
+  color: red;
+  font-size: 0.875rem;
+  margin: 0.25rem 0 0 0;
+  padding-left: 0;
+  list-style-position: inside;
+}

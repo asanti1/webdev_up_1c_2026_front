@@ -1,0 +1,17 @@
+<div class="card rounded-4 border-light-subtle">
+  <div class="card-body">
+    <h2 class="h5 fw-bold mb-3">
+      Categorías
+    </h2>
+
+    <div class="d-grid gap-2">
+      @for (category of categories; track category) {
+      <button type="button" class="btn btn-sm text-start" [class.btn-primary]="selectedCategory() === category"
+        [class.btn-light]="selectedCategory() !== category" [class.border]="selectedCategory() !== category"
+        (click)="selectCategory(category)">
+        {{ category }}
+      </button>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+.package-card {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.package-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.12) !important;
+}
+
+.package-img {
+  height: 210px;
+  object-fit: cover;
+}
+
+@media (max-width: 575.98px) {
+  .package-img {
+    height: 190px;
+  }
+}
