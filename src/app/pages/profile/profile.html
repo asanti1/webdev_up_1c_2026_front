@@ -1,0 +1,158 @@
+<app-header />
+
+<main class="container py-4 py-lg-5">
+
+  <a routerLink="/" class="btn btn-link text-decoration-none px-0 mb-4">
+    <i class="bi bi-arrow-left"></i>
+    Volver al inicio
+  </a>
+
+  @if (user(); as currentUser) {
+
+  <section class="row g-4">
+
+    <div class="col-12 col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body p-4 text-center">
+
+          <div class="profile-avatar mx-auto mb-3">
+            {{ currentUser.firstName.charAt(0) }}{{ currentUser.lastName.charAt(0) }}
+          </div>
+
+          <h1 class="h4 fw-bold mb-1">
+            {{ currentUser.firstName }} {{ currentUser.lastName }}
+          </h1>
+
+          <p class="text-muted mb-0">
+            {{ currentUser.email }}
+          </p>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+
+          <div class="d-flex justify-content-between align-items-center gap-3 mb-4">
+            <h2 class="h5 fw-bold mb-0">
+              Datos de la cuenta
+            </h2>
+
+            @if (!isEditing()) {
+            <button type="button" class="btn btn-outline-primary btn-sm" (click)="startEdit()">
+              <i class="bi bi-pencil"></i>
+              Editar perfil
+            </button>
+            }
+          </div>
+
+          <div class="row g-3">
+
+            <div class="col-12 col-md-6">
+              <label class="form-label text-muted">
+                Nombre
+              </label>
+
+              <input type="text" class="form-control"
+                [value]="isEditing() ? editModel().firstName : currentUser.firstName" [readonly]="!isEditing()"
+                (input)="updateField('firstName', $event)" />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label text-muted">
+                Apellido
+              </label>
+
+              <input type="text" class="form-control"
+                [value]="isEditing() ? editModel().lastName : currentUser.lastName" [readonly]="!isEditing()"
+                (input)="updateField('lastName', $event)" />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label text-muted">
+                Email
+              </label>
+
+              <input type="email" class="form-control" [value]="isEditing() ? editModel().email : currentUser.email"
+                [readonly]="!isEditing()" (input)="updateField('email', $event)" />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label text-muted">
+                Teléfono
+              </label>
+
+              <input type="text" class="form-control"
+                [value]="isEditing() ? editModel().cellphoneNumber : currentUser.cellphoneNumber"
+                [readonly]="!isEditing()" (input)="updateField('cellphoneNumber', $event)" />
+            </div>
+
+          </div>
+
+          @if (isEditing()) {
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-outline-secondary" (click)="cancelEdit()">
+              Cancelar
+            </button>
+
+            <button type="button" class="btn btn-primary" (click)="saveProfile()">
+              Guardar cambios
+            </button>
+          </div>
+          }
+
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+          <h2 class="h5 fw-bold mb-3">
+            Seguridad
+          </h2>
+
+          <p class="text-muted mb-3">
+            Desde esta sección vas a poder cambiar tu contraseña.
+          </p>
+          <a routerLink="/profile/change-password" class="btn btn-outline-primary">
+            Cambiar contraseña
+          </a>
+
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <h2 class="h5 fw-bold mb-3">
+            Reservas
+          </h2>
+
+          <p class="text-muted mb-0">
+            Próximamente vas a poder ver tus reservas realizadas desde esta sección.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <div class="mt-4">
+    <button type="button" class="btn btn-outline-danger" (click)="logout()">
+      Cerrar sesión
+    </button>
+  </div>
+
+  } @else {
+
+  <div class="alert alert-warning">
+    No hay una sesión activa.
+  </div>
+
+  }
+
+</main>
+
+<app-footer />

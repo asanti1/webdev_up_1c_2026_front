@@ -76,7 +76,8 @@ export class Register {
         console.log(user)
         this.authService.login({ email: this.registerModel().email, password: this.registerModel().password }).subscribe({
           next: (token) => {
-            this.authState.setSession(token, user);
+            this.authState.setToken(token);
+            this.authState.setUserFromToken(token);
             this.router.navigateByUrl('/');
           },
           error: (err) => {

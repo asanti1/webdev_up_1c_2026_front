@@ -1,0 +1,130 @@
+<div
+  class="offcanvas offcanvas-end"
+  tabindex="-1"
+  id="cartOffcanvas"
+  aria-labelledby="cartOffcanvasLabel"
+>
+  <div class="offcanvas-header border-bottom">
+    <h2 class="offcanvas-title h5 fw-bold" id="cartOffcanvasLabel">
+      Tu carrito
+    </h2>
+
+    <button
+      type="button"
+      class="btn-close"
+      data-bs-dismiss="offcanvas"
+      aria-label="Cerrar"
+    ></button>
+  </div>
+
+  <div class="offcanvas-body">
+
+    @if (hasItem(); as hasCartItem) {
+
+      @if (item(); as cartItem) {
+
+        <div class="d-flex gap-3 mb-4">
+          <img
+            [src]="cartItem.package.imageUrl"
+            [alt]="cartItem.package.title"
+            class="cart-img rounded-3"
+          />
+
+          <div class="flex-grow-1">
+            <h3 class="h6 fw-bold mb-1">
+              {{ cartItem.package.title }}
+            </h3>
+
+            <p class="text-muted small mb-1">
+              <i class="bi bi-geo-alt"></i>
+              {{ cartItem.package.destination }}
+            </p>
+
+            <p class="fw-semibold mb-0">
+              {{ cartItem.package.price | currency:'ARS':'symbol':'1.0-0' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="border rounded-4 p-3 mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="fw-semibold">
+              Pasajeros
+            </span>
+
+            <div class="btn-group">
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                (click)="decreasePassengers()"
+                [disabled]="cartItem.passengers <= 1"
+              >
+                <i class="bi bi-dash"></i>
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-light btn-sm disabled"
+              >
+                {{ cartItem.passengers }}
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                (click)="increasePassengers()"
+              >
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted">
+              Total
+            </span>
+
+            <span class="fw-bold fs-5">
+              {{ total() | currency:'ARS':'symbol':'1.0-0' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="confirmReservation()"
+          >
+            Confirmar reserva
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline-danger"
+            (click)="removeItem()"
+          >
+            Eliminar paquete
+          </button>
+        </div>
+
+      }
+
+    } @else {
+
+      <div class="text-center py-5">
+        <i class="bi bi-cart-x fs-1 text-muted"></i>
+
+        <h3 class="h5 fw-bold mt-3">
+          Tu carrito está vacío
+        </h3>
+
+        <p class="text-muted mb-0">
+          Agregá un paquete para comenzar una reserva.
+        </p>
+      </div>
+
+    }
+
+  </div>
+</div>

@@ -34,6 +34,7 @@ export class Login {
     required(schemaPath.password, { message: 'La contraseña es requerida' });
   });
 
+
   goBack(): void {
     this.location.back();
   }
@@ -41,8 +42,8 @@ export class Login {
     event.preventDefault();
     this.authService.login(this.loginModel()).subscribe({
       next: (token) => {
-        console.log(token)
         this.authState.setToken(token);
+        this.authState.setUserFromToken(token);
         this.router.navigateByUrl('/');
       },
       error: (err) => {

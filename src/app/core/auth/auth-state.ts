@@ -6,6 +6,7 @@ export interface AuthUser {
   lastName: string;
   email: string;
   role: 'USER' | 'ADMIN' | string;
+  cellphoneNumber?: string;
 }
 
 @Injectable({
@@ -23,6 +24,19 @@ export class AuthState {
   token = this.tokenState.asReadonly();
   isAuthenticated = computed(() => this.token() !== null);
 
+
+  setUserFromToken(token: string): void {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+
+    this.setUser({
+      id: payload.sub,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      email: payload.email,
+      role: payload.role,
+      cellphoneNumber: payload.cellphoneNumber ?? '',
+    });
+  }
 
   setSession(token: string, user: AuthUser): void {
     localStorage.setItem(this.tokenKey, token);

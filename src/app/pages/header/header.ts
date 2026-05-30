@@ -1,11 +1,13 @@
-import { Component, computed, inject, output } from '@angular/core';
+import { Component, inject, output } from '@angular/core';
 import { AuthState } from '../../core/auth/auth-state';
 import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject, Subscription } from 'rxjs';
+import { CartState } from '../../core/cart/cart-state';
+import { CartOffcanvas } from '../cart-offcanvas/cart-offcanvas';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink],
+  imports: [RouterLink, CartOffcanvas],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
@@ -20,7 +22,11 @@ export class Header {
 
   user = this.authState.user;
   isAuthenticated = this.authState.isAuthenticated;
+  private readonly cartState = inject(CartState);
 
+  cartItem = this.cartState.item;
+  cartPassengers = this.cartState.passengers;
+  hasCartItem = this.cartState.hasItem;
 
   constructor() {
     this.searchSubscription = this.searchSubject
