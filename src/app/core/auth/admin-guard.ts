@@ -2,14 +2,16 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthState } from './auth-state';
 
-export const authGuard: CanActivateFn = () => {
+export const adminGuard: CanActivateFn = () => {
   const authState = inject(AuthState);
   const router = inject(Router);
 
-  if (authState.isAuthenticated()) {
+  const user = authState.user();
+
+  if (user?.role === 'ADMIN') {
     return true;
   }
 
-  router.navigateByUrl('/login');
+  router.navigateByUrl('/');
   return false;
 };

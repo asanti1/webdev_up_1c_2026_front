@@ -32,6 +32,7 @@ export class Register {
   countries = signal<Country[]>([]);
   isLoadingCountries = signal(false);
   countriesError = signal<string | null>(null);
+  errorMessage = signal<string | null>(null);
 
   registerModel = signal<RegisterData>({
     firstName: '',
@@ -81,8 +82,9 @@ export class Register {
             this.router.navigateByUrl('/');
           },
           error: (err) => {
-            console.error(err);
-
+            if (err.status === 409) {
+              this.errorMessage.set('Ya existe una cuenta con ese email');
+            }
           }
         })
       },

@@ -1,0 +1,46 @@
+<app-header />
+
+<main class="container py-4 py-lg-5">
+
+  <section class="mb-4">
+    <p class="text-muted mb-1">
+      Administración
+    </p>
+
+    <h1 class="fw-bold mb-2">
+      Panel de administración
+    </h1>
+
+    <p class="text-muted mb-0">
+      Gestioná las entidades principales del sistema de viajes.
+    </p>
+  </section>
+
+  <section class="row g-4">
+    @for (section of sections; track section.route) {
+      <div class="col-12 col-md-6 col-xl-4">
+        <a
+          [routerLink]="section.route"
+          class="admin-card card h-100 border-0 shadow-sm rounded-4 text-decoration-none text-body"
+        >
+          <div class="card-body p-4">
+            <div class="admin-icon mb-3">
+              <i class="bi {{ section.icon }}"></i>
+            </div>
+
+            <h2 class="h5 fw-bold mb-2">
+              {{ section.title }}
+            </h2>
+
+            <p class="text-muted mb-0">
+              {{ section.description }}
+            </p>
+          </div>
+        </a>
+      </div>
+    }
+  </section>
+
+</main>
+
+<app-footer />

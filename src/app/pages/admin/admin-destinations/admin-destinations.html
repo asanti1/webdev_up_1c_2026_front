@@ -1,0 +1,252 @@
+<app-header />
+
+<main class="container py-4 py-lg-5">
+
+  <a routerLink="/admin" class="btn btn-link text-decoration-none px-0 mb-4">
+    <i class="bi bi-arrow-left"></i>
+    Volver al panel
+  </a>
+
+  <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+    <div>
+      <p class="text-muted mb-1">
+        Administración
+      </p>
+
+      <h1 class="fw-bold mb-2">
+        Destinos
+      </h1>
+
+      <p class="text-muted mb-0">
+        Gestioná los destinos disponibles para los paquetes turísticos.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      data-bs-toggle="modal"
+      data-bs-target="#destinationModal"
+      (click)="openCreateModal()"
+    >
+      <i class="bi bi-plus-lg"></i>
+      Nuevo destino
+    </button>
+  </section>
+
+  <section class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4">
+
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="input-group">
+            <span class="input-group-text bg-white">
+              <i class="bi bi-search"></i>
+            </span>
+
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Buscar destino..."
+              (input)="onSearch($event)"
+            />
+          </div>
+        </div>
+      </div>
+
+      @if (destinationsResponse().data.length === 0) {
+
+        <div class="alert alert-light border text-center py-5 mb-0">
+          <h2 class="h5 fw-bold mb-2">
+            No se encontraron destinos
+          </h2>
+
+          <p class="text-muted mb-0">
+            Probá con otra búsqueda o creá un nuevo destino.
+          </p>
+        </div>
+
+      } @else {
+
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Destino</th>
+                <th>Descripción</th>
+                <th>País</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (destination of destinationsResponse().data; track destination.id) {
+                <tr>
+                  <td class="fw-semibold">
+                    {{ destination.name }}
+                  </td>
+
+                  <td class="text-muted">
+                    {{ destination.description }}
+                  </td>
+
+                  <td>
+                    <span class="badge text-bg-light border">
+                      {{ destination.country.name }}
+                    </span>
+                  </td>
+
+                  <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#destinationModal"
+                        (click)="openEditModal(destination)"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
+
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger"
+                        (click)="deleteDestination(destination)"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <app-package-pagination
+          [currentPage]="destinationsResponse().page"
+          [totalPages]="destinationsResponse().totalPages"
+          (pageChange)="goToPage($event)"
+        />
+
+      }
+
+    </div>
+  </section>
+
+</main>
+
+<div
+  class="modal fade"
+  id="destinationModal"
+  tabindex="-1"
+  aria-labelledby="destinationModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4 border-0">
+
+      <div class="modal-header border-bottom">
+        <h2 class="modal-title h5 fw-bold" id="destinationModalLabel">
+          @if (isEditing()) {
+            Editar destino
+          } @else {
+            Nuevo destino
+          }
+        </h2>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
+      </div>
+
+      <form (submit)="saveDestination(); $event.preventDefault()">
+        <div class="modal-body">
+
+          <div class="row g-3">
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">
+                Nombre del destino
+              </label>
+
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Ej: Bariloche"
+                [value]="destinationForm().name"
+                (input)="updateFormField('name', $event)"
+              />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">
+                País
+              </label>
+
+              <select
+                class="form-select"
+                [value]="destinationForm().countryId"
+                (change)="updateFormField('countryId', $event)"
+              >
+                <option value="">
+                  Seleccionar país
+                </option>
+
+                @for (country of countryOptions; track country.id) {
+                  <option [value]="country.id">
+                    {{ country.name }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">
+                Descripción
+              </label>
+
+              <textarea
+                class="form-control"
+                rows="4"
+                placeholder="Descripción del destino"
+                [value]="destinationForm().description"
+                (input)="updateFormField('description', $event)"
+              ></textarea>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-top">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            data-bs-dismiss="modal"
+          >
+            @if (isEditing()) {
+              Guardar cambios
+            } @else {
+              Crear destino
+            }
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<app-footer />

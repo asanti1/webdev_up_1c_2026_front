@@ -44,6 +44,12 @@
             }
 
 
+            @if (errorMessage()) {
+            <div class="alert alert-danger">
+              {{ errorMessage() }}
+            </div>
+            }
+
 
             <button type="submit" class="btn btn-primary w-50">Log In</button>
 

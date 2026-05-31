@@ -22,6 +22,7 @@ export class Login {
   private authState = inject(AuthState);
   private router = inject(Router);
   private readonly location = inject(Location);
+  errorMessage = signal<string | null>(null);
 
   loginModel = signal<LoginData>({
     email: '',
@@ -40,6 +41,7 @@ export class Login {
   }
   onSubmit(event: Event) {
     event.preventDefault();
+    this.errorMessage.set(null);
     this.authService.login(this.loginModel()).subscribe({
       next: (token) => {
         this.authState.setToken(token);
@@ -47,7 +49,12 @@ export class Login {
         this.router.navigateByUrl('/');
       },
       error: (err) => {
-        console.error(err);
+        if (err.status === 401) {
+          this.errorMessage.set('Email o contraseña incorrectos');
+          return;
+        }
+
+        this.errorMessage.set('Ocurrió un error al iniciar sesión');
       }
     })
   }

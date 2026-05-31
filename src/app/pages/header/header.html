@@ -67,6 +67,14 @@
               </a>
             </li>
 
+            @if (user()?.role === 'ADMIN') {
+            <li>
+              <a class="dropdown-item" routerLink="/admin">
+                Administración
+              </a>
+            </li>
+            }
+
             <li>
               <a class="dropdown-item" routerLink="/reservations">
                 Mis reservas
