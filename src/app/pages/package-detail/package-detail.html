@@ -7,119 +7,123 @@
     Volver a paquetes
   </a>
 
-  @if (selectedPackage(); as pack) {
+  @if (loading()) {
+    <div class="alert alert-light border text-center py-5">
+      <h1 class="h4 fw-bold mb-2">
+        Cargando paquete...
+      </h1>
 
-  <div class="row g-4">
+      <p class="text-muted mb-0">
+        Estamos obteniendo la información del viaje.
+      </p>
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-light border text-center py-5">
+      <h1 class="h4 fw-bold mb-2">
+        Paquete no encontrado
+      </h1>
 
-    <section class="col-12 col-lg-7">
-      <img [src]="pack.imageUrl" [alt]="pack.title" class="img-fluid rounded-4 shadow-sm package-detail-img" />
-    </section>
+      <p class="text-muted mb-3">
+        {{ error() }}
+      </p>
 
-    <section class="col-12 col-lg-5">
-      <div class="card border-0 shadow-sm rounded-4 h-100">
-        <div class="card-body p-4 d-flex flex-column">
+      <a routerLink="/" class="btn btn-primary">
+        Volver al inicio
+      </a>
+    </div>
+  } @else if (selectedPackage(); as pack) {
 
-          <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-            <span class="badge text-bg-primary">
-              {{ pack.category }}
-            </span>
+    <div class="row g-4">
 
-            <span class="small text-muted">
-              {{ pack.availableSlots }} lugares disponibles
-            </span>
-          </div>
+      <section class="col-12 col-lg-7">
+        <img
+          [src]="pack.imageUrl"
+          [alt]="pack.title"
+          class="img-fluid rounded-4 shadow-sm package-detail-img"
+        />
+      </section>
 
-          <h1 class="fw-bold mb-3">
-            {{ pack.title }}
-          </h1>
+      <section class="col-12 col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+          <div class="card-body p-4 d-flex flex-column">
 
-          <p class="text-muted mb-3">
-            <i class="bi bi-geo-alt"></i>
-            {{ pack.destination }}
-          </p>
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+              <span class="badge text-bg-primary">
+                {{ pack.categoryPackage.name }}
+              </span>
 
-          <p class="mb-4">
-            {{ pack.description }}
-          </p>
+              <span class="small text-muted">
+                {{ pack.availableSlots }} lugares disponibles
+              </span>
+            </div>
 
-          <div class="row g-3 mb-4">
-            <div class="col-6">
-              <div class="border rounded-3 p-3 h-100">
-                <p class="text-muted small mb-1">
-                  Duración
-                </p>
+            <h1 class="fw-bold mb-3">
+              {{ pack.title }}
+            </h1>
 
-                <p class="fw-semibold mb-0">
-                  {{ pack.durationDays }} días
-                </p>
+            <p class="text-muted mb-3">
+              <i class="bi bi-geo-alt"></i>
+              {{ pack.destination.name }}
+            </p>
+
+            <p class="mb-4">
+              {{ pack.description }}
+            </p>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12">
+                <div class="border rounded-3 p-3">
+                  <p class="text-muted small mb-1">
+                    Fechas del viaje
+                  </p>
+
+                  <p class="fw-semibold mb-0">
+                    {{ pack.startDate | date:'dd/MM/yyyy' }}
+                    -
+                    {{ pack.endDate | date:'dd/MM/yyyy' }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="border rounded-3 p-3">
+                  <p class="text-muted small mb-1">
+                    Cupos
+                  </p>
+
+                  <p class="fw-semibold mb-0">
+                    {{ pack.availableSlots }} disponibles de {{ pack.maxSlots }}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div class="col-6">
-              <div class="border rounded-3 p-3 h-100">
-                <p class="text-muted small mb-1">
-                  Fecha
+            <div class="mt-auto d-flex justify-content-between align-items-end gap-3">
+              <div>
+                <p class="text-muted small mb-0">
+                  Precio desde
                 </p>
 
-                <p class="fw-semibold mb-0">
-                  {{ pack.startDate }} / {{ pack.endDate }}
+                <p class="fw-bold fs-3 mb-0">
+                  ${{ pack.price }}
                 </p>
               </div>
-            </div>
-          </div>
 
-          <div class="mb-4">
-            <h2 class="h5 fw-bold mb-3">
-              Incluye
-            </h2>
-
-            <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
-              @for (item of pack.includes; track item) {
-              <li>
-                <i class="bi bi-check-circle text-success me-2"></i>
-                {{ item }}
-              </li>
-              }
-            </ul>
-          </div>
-
-          <div class="mt-auto d-flex justify-content-between align-items-end gap-3">
-            <div>
-              <p class="text-muted small mb-0">
-                Precio desde
-              </p>
-
-              <p class="fw-bold fs-3 mb-0">
-                ${{ pack.price }}
-              </p>
+              <button
+                type="button"
+                class="btn btn-primary"
+                [disabled]="pack.availableSlots <= 0 || !pack.isActive"
+                (click)="addToCart()"
+              >
+                Reservar
+              </button>
             </div>
 
-            <button type="button" class="btn btn-primary" (click)="addToCart()">
-              Reservar
-            </button>
           </div>
-
         </div>
-      </div>
-    </section>
+      </section>
 
-  </div>
-
-  } @else {
-
-  <div class="alert alert-light border text-center py-5">
-    <h1 class="h4 fw-bold mb-2">
-      Paquete no encontrado
-    </h1>
-
-    <p class="text-muted mb-3">
-      El paquete que estás buscando no existe o ya no está disponible.
-    </p>
-
-    <a routerLink="/" class="btn btn-primary">
-      Volver al inicio
-    </a>
-  </div>
+    </div>
 
   }
 

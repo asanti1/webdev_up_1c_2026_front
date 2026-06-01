@@ -1,14 +1,13 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Header } from '../../header/header';
 import { Footer } from '../../footer/footer';
 import { PackagePagination } from '../../home/package-pagination/package-pagination';
-
-interface CategoryMock {
-  id: string;
-  name: string;
-  description: string;
-}
+import { CategoryPackage } from '../../../core/models/category-package';
+import {
+  CategoryPackagePayload,
+  CategoryPackages,
+} from '../../../core/services/category-packages';
 
 type CategoryFormModel = {
   name: string;
@@ -28,31 +27,12 @@ type CategoryFormModel = {
   styleUrl: './admin-categories.css',
 })
 export class AdminCategories {
-  categories = signal<CategoryMock[]>([
-    {
-      id: '1',
-      name: 'Aventura',
-      description: 'Paquetes orientados a actividades al aire libre.',
-    },
-    {
-      id: '2',
-      name: 'Relax',
-      description: 'Viajes de descanso, spa y desconexión.',
-    },
-    {
-      id: '3',
-      name: 'Cultural',
-      description: 'Experiencias históricas, gastronómicas y urbanas.',
-    },
-    {
-      id: '4',
-      name: 'Naturaleza',
-      description: 'Destinos con paisajes naturales y excursiones.',
-    },
-  ]);
+  private categoryPackagesService = inject(CategoryPackages);
 
-  editingCategory = signal<CategoryMock | null>(null);
-
+  categories = signal<CategoryPackage[]>([]);
+  editingCategory = signal<CategoryPackage | null>(null);
+  errorMessage = signal<string | null>(null);
+  successMessage = signal<string | null>(null);
   categoryForm = signal<CategoryFormModel>({
     name: '',
     description: '',
@@ -64,6 +44,21 @@ export class AdminCategories {
   currentPage = signal(1);
   pageSize = signal(5);
 
+  ngOnInit(): void {
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.categoryPackagesService.getAll(1, 50).subscribe({
+      next: (response) => {
+        this.categories.set(response.data);
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
+
   filteredCategories = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
 
@@ -72,7 +67,13 @@ export class AdminCategories {
       category.description.toLowerCase().includes(term)
     );
   });
-
+  private getErrorMessage(error: any): string {
+    return (
+      error?.error?.error?.message ||
+      error?.error?.message ||
+      'Ocurrió un error inesperado'
+    );
+  }
   categoriesResponse = computed(() => {
     const filtered = this.filteredCategories();
 
@@ -113,7 +114,7 @@ export class AdminCategories {
     });
   }
 
-  openEditModal(category: CategoryMock): void {
+  openEditModal(category: CategoryPackage): void {
     this.editingCategory.set(category);
 
     this.categoryForm.set({
@@ -123,7 +124,7 @@ export class AdminCategories {
   }
 
   updateFormField(field: keyof CategoryFormModel, event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
+    const value = (event.target as HTMLInputElement | HTMLTextAreaElement).value;
 
     this.categoryForm.update(current => ({
       ...current,
@@ -134,60 +135,70 @@ export class AdminCategories {
   saveCategory(): void {
     const form = this.categoryForm();
 
-    if (!form.name.trim() || !form.description.trim()) {
+    const payload: CategoryPackagePayload = {
+      name: form.name.trim(),
+      description: form.description.trim(),
+    };
+
+    if (!payload.name || !payload.description) {
       return;
     }
 
     const editing = this.editingCategory();
 
-    /*
-      Después:
-      if (editing) {
-        categoryService.update(editing.id, form)
-      } else {
-        categoryService.create(form)
-      }
-    */
-
     if (editing) {
-      this.categories.update(current =>
-        current.map(category =>
-          category.id === editing.id
-            ? {
-                ...category,
-                name: form.name.trim(),
-                description: form.description.trim(),
-              }
-            : category
-        )
-      );
+      this.categoryPackagesService.update(editing.id, payload).subscribe({
+        next: () => {
+          this.successMessage.set(
+            'Categoría actualizada correctamente'
+          );
+
+          this.loadCategories();
+
+        },
+        error: (error) => {
+          console.error(error);
+        },
+      });
 
       return;
     }
 
-    const newCategory: CategoryMock = {
-      id: crypto.randomUUID(),
-      name: form.name.trim(),
-      description: form.description.trim(),
-    };
+    this.categoryPackagesService.create(payload).subscribe({
+      next: () => {
+        this.successMessage.set(
+          'Categoría creada correctamente'
+        );
+        this.currentPage.set(1);
+        this.loadCategories();
 
-    this.categories.update(current => [
-      newCategory,
-      ...current,
-    ]);
-
-    this.currentPage.set(1);
+        this.categoryForm.set({
+          name: '',
+          description: '',
+        });
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
   }
 
-  deleteCategory(category: CategoryMock): void {
-    const confirmed = confirm(`¿Seguro que querés eliminar ${category.name}?`);
+  deleteCategory(category: CategoryPackage): void {
+    const confirmed = confirm(`¿Seguro que querés eliminar la categoría ${category.name}?`);
 
     if (!confirmed) {
       return;
     }
 
-    this.categories.update(current =>
-      current.filter(item => item.id !== category.id)
-    );
+    this.categoryPackagesService.delete(category.id).subscribe({
+      next: () => {
+        this.loadCategories();
+      },
+      error: (error) => {
+        this.errorMessage.set(
+          this.getErrorMessage(error)
+        );
+      },
+    });
   }
 }

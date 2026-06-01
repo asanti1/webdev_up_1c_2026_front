@@ -6,6 +6,8 @@ import { Header } from "../header/header";
 import { CategorySidebar } from "./category-sidebar/category-sidebar";
 import { PackageCard } from "./package-card/package-card";
 import { PackagePagination } from "./package-pagination/package-pagination";
+import { Packages } from '../../core/services/packages';
+import { TravelPackage } from '../../core/models/travel-package';
 
 export interface PaginatedResponse<T> {
   data: T[];
@@ -23,55 +25,16 @@ export interface PaginatedResponse<T> {
   standalone: true
 })
 export class Home {
-
-
-
   private authState = inject(AuthState);
   private router = inject(Router);
-
-  packages = [
-    {
-      id: '1',
-      title: 'Bariloche Aventura',
-      destination: 'Bariloche',
-      category: 'Aventura',
-      price: 850000,
-      imageUrl: 'https://images.unsplash.com/photo-1589909202802-8f4aadce1849',
-      availableSlots: 18,
-    },
-    {
-      id: '2',
-      title: 'Mendoza Relax',
-      destination: 'Mendoza',
-      category: 'Relax',
-      price: 620000,
-      imageUrl: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3',
-      availableSlots: 10,
-    },
-    {
-      id: '3',
-      title: 'Ushuaia Fin del Mundo',
-      destination: 'Ushuaia',
-      category: 'Naturaleza',
-      price: 980000,
-      imageUrl: 'https://images.unsplash.com/photo-1535837487710-a191373a20ae',
-      availableSlots: 7,
-    },
-    {
-      id: '4',
-      title: 'Salta Cultural',
-      destination: 'Salta',
-      category: 'Cultural',
-      price: 540000,
-      imageUrl: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3',
-      availableSlots: 14,
-    },
-  ];
-
+  private packagesService = inject(Packages);
   searchTerm = signal('');
   selectedCategory = signal('Todas');
   currentPage = signal(1);
   pageSize = signal(3);
+  packages = signal<TravelPackage[]>([]);
+  loading = signal(false);
+  error = signal<string | null>(null);
 
   packagesResponse = computed(() => {
     const filtered = this.filteredPackages();
@@ -93,23 +56,39 @@ export class Home {
     };
   });
 
-  goToPage(page: number): void {
-  this.currentPage.set(page);
-}
+  ngOnInit(): void {
+    this.loadPackages();
+  }
+
+  loadPackages(): void {
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.packagesService.getAll(1, 50).subscribe({
+      next: (response) => {
+        this.packages.set(response.data);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('No se pudieron cargar los paquetes');
+        this.loading.set(false);
+      },
+    });
+  }
 
   filteredPackages = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const category = this.selectedCategory().toLowerCase();
 
-    return this.packages.filter(pack => {
+    return this.packages().filter(pack => {
       const matchesSearch =
         pack.title.toLowerCase().includes(term) ||
-        pack.destination.toLowerCase().includes(term) ||
-        pack.category.toLowerCase().includes(term);
+        pack.destination.name.toLowerCase().includes(term) ||
+        pack.categoryPackage.name.toLowerCase().includes(term);
 
       const matchesCategory =
         category === 'todas' ||
-        pack.category.toLowerCase() === category;
+        pack.categoryPackage.name.toLowerCase() === category;
 
       return matchesSearch && matchesCategory;
     });
@@ -125,7 +104,11 @@ export class Home {
     this.currentPage.set(1);
   }
 
-  logout() {
+  goToPage(page: number): void {
+    this.currentPage.set(page);
+  }
+
+  logout(): void {
     this.authState.clearSession();
     this.router.navigateByUrl('/login');
   }

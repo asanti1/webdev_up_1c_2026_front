@@ -18,13 +18,8 @@
       </p>
     </div>
 
-    <button
-      type="button"
-      class="btn btn-primary"
-      data-bs-toggle="modal"
-      data-bs-target="#packageModal"
-      (click)="openCreateModal()"
-    >
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#packageModal"
+      (click)="openCreateModal()">
       <i class="bi bi-plus-lg"></i>
       Nuevo paquete
     </button>
@@ -40,132 +35,106 @@
               <i class="bi bi-search"></i>
             </span>
 
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Buscar paquete..."
-              (input)="onSearch($event)"
-            />
+            <input type="text" class="form-control" placeholder="Buscar paquete..." (input)="onSearch($event)" />
           </div>
         </div>
       </div>
 
       @if (packagesResponse().data.length === 0) {
 
-        <div class="alert alert-light border text-center py-5 mb-0">
-          <h2 class="h5 fw-bold mb-2">No se encontraron paquetes</h2>
+      <div class="alert alert-light border text-center py-5 mb-0">
+        <h2 class="h5 fw-bold mb-2">No se encontraron paquetes</h2>
 
-          <p class="text-muted mb-0">
-            Probá con otra búsqueda o creá un nuevo paquete.
-          </p>
-        </div>
+        <p class="text-muted mb-0">
+          Probá con otra búsqueda o creá un nuevo paquete.
+        </p>
+      </div>
 
       } @else {
 
-        <div class="table-responsive">
-          <table class="table align-middle">
-            <thead>
-              <tr>
-                <th>Paquete</th>
-                <th>Destino</th>
-                <th>Categoría</th>
-                <th>Precio</th>
-                <th>Cupos</th>
-                <th>Estado</th>
-                <th class="text-end">Acciones</th>
-              </tr>
-            </thead>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Paquete</th>
+              <th>Destino</th>
+              <th>Categoría</th>
+              <th>Precio</th>
+              <th>Cupos</th>
+              <th>Estado</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
 
-            <tbody>
-              @for (pack of packagesResponse().data; track pack.id) {
-                <tr>
-                  <td>
-                    <div class="d-flex align-items-center gap-3">
-                      <img
-                        [src]="pack.imageUrl"
-                        [alt]="pack.title"
-                        width="56"
-                        height="42"
-                        class="rounded object-fit-cover"
-                      />
+          <tbody>
+            @for (pack of packagesResponse().data; track pack.id) {
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <img [src]="pack.imageUrl" [alt]="pack.title" width="56" height="42"
+                    class="rounded object-fit-cover" />
 
-                      <div>
-                        <p class="fw-semibold mb-0">
-                          {{ pack.title }}
-                        </p>
+                  <div>
+                    <p class="fw-semibold mb-0">
+                      {{ pack.title }}
+                    </p>
 
-                        <p class="text-muted small mb-0">
-                          {{ pack.startDate | date:'dd/MM/yyyy' }} -
-                          {{ pack.endDate | date:'dd/MM/yyyy' }}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
+                    <p class="text-muted small mb-0">
+                      {{ pack.startDate | date:'dd/MM/yyyy' }} -
+                      {{ pack.endDate | date:'dd/MM/yyyy' }}
+                    </p>
+                  </div>
+                </div>
+              </td>
 
-                  <td>{{ pack.destination.name }}</td>
+              <td>{{ pack.destination.name }}</td>
 
-                  <td>
-                    <span class="badge text-bg-light border">
-                      {{ pack.categoryPackage.name }}
-                    </span>
-                  </td>
+              <td>
+                <span class="badge text-bg-light border">
+                  {{ pack.categoryPackage.name }}
+                </span>
+              </td>
 
-                  <td>
-                    {{ pack.price | currency:'ARS':'symbol':'1.0-0' }}
-                  </td>
+              <td>
+                {{ pack.price | currency:'ARS':'symbol':'1.0-0' }}
+              </td>
 
-                  <td>
-                    {{ pack.availableSlots }} / {{ pack.maxSlots }}
-                  </td>
+              <td>
+                {{ pack.availableSlots }} / {{ pack.maxSlots }}
+              </td>
 
-                  <td>
-                    @if (pack.isActive) {
-                      <span class="badge text-bg-success">Activo</span>
-                    } @else {
-                      <span class="badge text-bg-secondary">Inactivo</span>
-                    }
-                  </td>
+              <td>
+                @if (pack.isActive) {
+                <span class="badge text-bg-success">Activo</span>
+                } @else {
+                <span class="badge text-bg-secondary">Inactivo</span>
+                }
+              </td>
 
-                  <td class="text-end">
-                    <div class="btn-group btn-group-sm">
-                      <button
-                        type="button"
-                        class="btn btn-outline-secondary"
-                        (click)="togglePackageStatus(pack)"
-                      >
-                        <i class="bi bi-power"></i>
-                      </button>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-secondary" (click)="togglePackageStatus(pack)">
+                    <i class="bi bi-power"></i>
+                  </button>
 
-                      <button
-                        type="button"
-                        class="btn btn-outline-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#packageModal"
-                        (click)="openEditModal(pack)"
-                      >
-                        <i class="bi bi-pencil"></i>
-                      </button>
+                  <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                    data-bs-target="#packageModal" (click)="openEditModal(pack)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
 
-                      <button
-                        type="button"
-                        class="btn btn-outline-danger"
-                        (click)="deletePackage(pack)"
-                      >
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+                  <button type="button" class="btn btn-outline-danger" (click)="deletePackage(pack)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
-        <app-package-pagination
-          [currentPage]="packagesResponse().page"
-          [totalPages]="packagesResponse().totalPages"
-          (pageChange)="goToPage($event)"
-        />
+      <app-package-pagination [currentPage]="packagesResponse().page" [totalPages]="packagesResponse().totalPages"
+        (pageChange)="goToPage($event)" />
 
       }
 
@@ -174,31 +143,20 @@
 
 </main>
 
-<div
-  class="modal fade"
-  id="packageModal"
-  tabindex="-1"
-  aria-labelledby="packageModalLabel"
-  aria-hidden="true"
->
+<div class="modal fade" id="packageModal" tabindex="-1" aria-labelledby="packageModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content rounded-4 border-0">
 
       <div class="modal-header border-bottom">
         <h2 class="modal-title h5 fw-bold" id="packageModalLabel">
           @if (isEditing()) {
-            Editar paquete
+          Editar paquete
           } @else {
-            Nuevo paquete
+          Nuevo paquete
           }
         </h2>
 
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Cerrar"
-        ></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
 
       <form (submit)="savePackage(); $event.preventDefault()">
@@ -209,53 +167,35 @@
             <div class="col-12 col-md-6">
               <label class="form-label">Título</label>
 
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Ej: Bariloche Aventura"
-                [value]="packageForm().title"
-                (input)="updateFormField('title', $event)"
-              />
+              <input type="text" class="form-control" placeholder="Ej: Bariloche Aventura" [value]="packageForm().title"
+                (input)="updateFormField('title', $event)" />
             </div>
 
             <div class="col-12 col-md-3">
               <label class="form-label">Precio</label>
 
-              <input
-                type="number"
-                class="form-control"
-                min="1"
-                [value]="packageForm().price"
-                (input)="updateFormField('price', $event)"
-              />
+              <input type="number" class="form-control" min="1" [value]="packageForm().price"
+                (input)="updateFormField('price', $event)" />
             </div>
 
             <div class="col-12 col-md-3">
               <label class="form-label">Cupos máximos</label>
 
-              <input
-                type="number"
-                class="form-control"
-                min="1"
-                [value]="packageForm().maxSlots"
-                (input)="updateFormField('maxSlots', $event)"
-              />
+              <input type="number" class="form-control" min="1" [value]="packageForm().maxSlots"
+                (input)="updateFormField('maxSlots', $event)" />
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label">Destino</label>
 
-              <select
-                class="form-select"
-                [value]="packageForm().destinationId"
-                (change)="updateFormField('destinationId', $event)"
-              >
+              <select class="form-select" [value]="packageForm().destinationId"
+                (change)="updateFormField('destinationId', $event)">
                 <option value="">Seleccionar destino</option>
 
-                @for (destination of destinationOptions; track destination.id) {
-                  <option [value]="destination.id">
-                    {{ destination.name }}
-                  </option>
+                @for (destination of destinationOptions(); track destination.id) {
+                <option [value]="destination.id">
+                  {{ destination.name }}
+                </option>
                 }
               </select>
             </div>
@@ -263,17 +203,14 @@
             <div class="col-12 col-md-6">
               <label class="form-label">Categoría</label>
 
-              <select
-                class="form-select"
-                [value]="packageForm().categoryPackageId"
-                (change)="updateFormField('categoryPackageId', $event)"
-              >
+              <select class="form-select" [value]="packageForm().categoryPackageId"
+                (change)="updateFormField('categoryPackageId', $event)">
                 <option value="">Seleccionar categoría</option>
 
-                @for (category of categoryOptions; track category.id) {
-                  <option [value]="category.id">
-                    {{ category.name }}
-                  </option>
+                @for (category of categoryOptions(); track category.id) {
+                <option [value]="category.id">
+                  {{ category.name }}
+                </option>
                 }
               </select>
             </div>
@@ -281,47 +218,29 @@
             <div class="col-12 col-md-6">
               <label class="form-label">Fecha de inicio</label>
 
-              <input
-                type="date"
-                class="form-control"
-                [value]="packageForm().startDate"
-                (input)="updateFormField('startDate', $event)"
-              />
+              <input type="date" class="form-control" [value]="packageForm().startDate"
+                (input)="updateFormField('startDate', $event)" />
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label">Fecha de fin</label>
 
-              <input
-                type="date"
-                class="form-control"
-                [value]="packageForm().endDate"
-                (input)="updateFormField('endDate', $event)"
-              />
+              <input type="date" class="form-control" [value]="packageForm().endDate"
+                (input)="updateFormField('endDate', $event)" />
             </div>
 
             <div class="col-12">
               <label class="form-label">Imagen URL</label>
 
-              <input
-                type="text"
-                class="form-control"
-                placeholder="https://..."
-                [value]="packageForm().imageUrl"
-                (input)="updateFormField('imageUrl', $event)"
-              />
+              <input type="text" class="form-control" placeholder="https://..." [value]="packageForm().imageUrl"
+                (input)="updateFormField('imageUrl', $event)" />
             </div>
 
             <div class="col-12">
               <label class="form-label">Descripción</label>
 
-              <textarea
-                class="form-control"
-                rows="4"
-                placeholder="Descripción del paquete"
-                [value]="packageForm().description"
-                (input)="updateFormField('description', $event)"
-              ></textarea>
+              <textarea class="form-control" rows="4" placeholder="Descripción del paquete"
+                [value]="packageForm().description" (input)="updateFormField('description', $event)"></textarea>
             </div>
 
           </div>
@@ -329,23 +248,15 @@
         </div>
 
         <div class="modal-footer border-top">
-          <button
-            type="button"
-            class="btn btn-outline-secondary"
-            data-bs-dismiss="modal"
-          >
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
             Cancelar
           </button>
 
-          <button
-            type="submit"
-            class="btn btn-primary"
-            data-bs-dismiss="modal"
-          >
+          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">
             @if (isEditing()) {
-              Guardar cambios
+            Guardar cambios
             } @else {
-              Crear paquete
+            Crear paquete
             }
           </button>
         </div>

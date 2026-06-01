@@ -3,6 +3,8 @@ import { Router, RouterLink } from '@angular/router';
 import { Footer } from '../footer/footer';
 import { Header } from '../header/header';
 import { AuthState, AuthUser } from '../../core/auth/auth-state';
+import { Reservation } from '../../core/models/reservation';
+import { Reservations } from '../../core/services/reservations';
 
 @Component({
   selector: 'app-profile',
@@ -14,10 +16,18 @@ import { AuthState, AuthUser } from '../../core/auth/auth-state';
 export class Profile {
   private readonly authState = inject(AuthState);
   private readonly router = inject(Router);
+  private readonly reservationsService = inject(Reservations);
 
   user = this.authState.user;
 
+  reservations = signal<Reservation[]>([]);
+  isLoadingReservations = signal(false);
   isEditing = signal(false);
+
+  ngOnInit(): void {
+    this.loadReservations();
+  }
+
 
   editModel = signal({
     firstName: '',
@@ -33,6 +43,22 @@ export class Profile {
 
     return `${user.firstName} ${user.lastName}`;
   });
+
+  loadReservations(): void {
+    this.isLoadingReservations.set(true);
+
+    this.reservationsService.getAllMe(1, 50).subscribe({
+      next: (response) => {
+        this.reservations.set(response.data);
+      },
+      error: (error) => {
+        console.error(error);
+      },
+      complete: () => {
+        this.isLoadingReservations.set(false);
+      },
+    });
+  }
 
   startEdit(): void {
     const user = this.user();

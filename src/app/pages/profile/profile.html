@@ -126,12 +126,65 @@
       <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body p-4">
           <h2 class="h5 fw-bold mb-3">
-            Reservas
+            Mis reservas
           </h2>
 
-          <p class="text-muted mb-0">
-            Próximamente vas a poder ver tus reservas realizadas desde esta sección.
-          </p>
+          @if (isLoadingReservations()) {
+
+          <div class="text-muted">
+            Cargando reservas...
+          </div>
+
+          } @else if (reservations().length === 0) {
+
+          <div class="text-muted">
+            Todavía no realizaste reservas.
+          </div>
+
+          } @else {
+
+          <div class="table-responsive">
+
+            <table class="table align-middle">
+
+              <thead>
+                <tr>
+                  <th>Paquete</th>
+                  <th>Destino</th>
+                  <th>Pasajeros</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                @for (reservation of reservations(); track reservation.id) {
+                <tr>
+                  <td> {{ reservation.package.title }} </td>
+                  <td> {{ reservation.destination.name }} </td>
+                  <td> {{ reservation.totalPassengers }} </td>
+                  <td>
+                    @switch (reservation.status) {
+                    @case ('pending') {
+                    <span class="badge text-bg-warning">Pendiente </span>
+                    <div class="small text-muted mt-2"> A la espera de validación administrativa. </div>
+                    }
+                    @case ('confirmed') {
+                    <span class="badge text-bg-success"> Confirmada</span>
+                    }
+                    @case ('cancelled') {
+                    <span class="badge text-bg-secondary"> Cancelada </span>
+                    }}
+                  </td>
+                </tr> }
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+          }
         </div>
       </div>
 

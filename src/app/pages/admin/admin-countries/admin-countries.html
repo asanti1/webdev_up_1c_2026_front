@@ -18,12 +18,17 @@
       </h1>
 
       <p class="text-muted mb-0">
-        Gestioná los países disponibles para usuarios y destinos.
+        Consultá y agregá países disponibles para usuarios y destinos.
       </p>
     </div>
 
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#countryModal"
-      (click)="openCreateModal()">
+    <button
+      type="button"
+      class="btn btn-primary"
+      data-bs-toggle="modal"
+      data-bs-target="#countryModal"
+      (click)="openCreateModal()"
+    >
       <i class="bi bi-plus-lg"></i>
       Nuevo país
     </button>
@@ -39,68 +44,62 @@
               <i class="bi bi-search"></i>
             </span>
 
-            <input type="text" class="form-control" placeholder="Buscar país..." (input)="onSearch($event)" />
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Buscar país..."
+              (input)="onSearch($event)"
+            />
           </div>
         </div>
       </div>
 
       @if (countriesResponse().data.length === 0) {
 
-      <div class="alert alert-light border text-center py-5 mb-0">
-        <h2 class="h5 fw-bold mb-2">
-          No se encontraron países
-        </h2>
+        <div class="alert alert-light border text-center py-5 mb-0">
+          <h2 class="h5 fw-bold mb-2">
+            No se encontraron países
+          </h2>
 
-        <p class="text-muted mb-0">
-          Probá con otra búsqueda o creá un nuevo país.
-        </p>
-      </div>
+          <p class="text-muted mb-0">
+            Probá con otra búsqueda o creá un nuevo país.
+          </p>
+        </div>
 
       } @else {
 
-      <div class="table-responsive">
-        <table class="table align-middle">
-          <thead>
-            <tr>
-              <th>País</th>
-              <th>Código ISO</th>
-              <th class="text-end">Acciones</th>
-            </tr>
-          </thead>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>País</th>
+                <th>Código ISO</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            @for (country of countriesResponse().data; track country.id) {
-            <tr>
-              <td class="fw-semibold">
-                {{ country.name }}
-              </td>
+            <tbody>
+              @for (country of countriesResponse().data; track country.id) {
+                <tr>
+                  <td class="fw-semibold">
+                    {{ country.name }}
+                  </td>
 
-              <td>
-                <span class="badge text-bg-light border">
-                  {{ country.isoCode }}
-                </span>
-              </td>
+                  <td>
+                    <span class="badge text-bg-light border">
+                      {{ country.isoCode }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
 
-              <td class="text-end">
-                <div class="btn-group btn-group-sm">
-                  <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
-                    data-bs-target="#countryModal" (click)="openEditModal(country)">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-
-                  <button type="button" class="btn btn-outline-danger" (click)="deleteCountry(country)">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <app-package-pagination [currentPage]="countriesResponse().page" [totalPages]="countriesResponse().totalPages"
-        (pageChange)="goToPage($event)" />
+        <app-package-pagination
+          [currentPage]="countriesResponse().page"
+          [totalPages]="countriesResponse().totalPages"
+          (pageChange)="goToPage($event)"
+        />
 
       }
 
@@ -109,21 +108,27 @@
 
 </main>
 
-
-<div class="modal fade" id="countryModal" tabindex="-1" aria-labelledby="countryModalLabel" aria-hidden="true">
+<div
+  class="modal fade"
+  id="countryModal"
+  tabindex="-1"
+  aria-labelledby="countryModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-4 border-0">
 
       <div class="modal-header border-bottom">
         <h2 class="modal-title h5 fw-bold" id="countryModalLabel">
-          @if (isEditing()) {
-          Editar país
-          } @else {
           Nuevo país
-          }
         </h2>
 
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
       </div>
 
       <form (submit)="saveCountry(); $event.preventDefault()">
@@ -134,8 +139,13 @@
               Nombre del país
             </label>
 
-            <input type="text" class="form-control" placeholder="Ej: Argentina" [value]="countryForm().name"
-              (input)="updateFormField('name', $event)" />
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Ej: Argentina"
+              [value]="countryForm().name"
+              (input)="updateFormField('name', $event)"
+            />
           </div>
 
           <div class="mb-0">
@@ -143,8 +153,14 @@
               Código ISO
             </label>
 
-            <input type="text" class="form-control text-uppercase" placeholder="Ej: ARG" maxlength="3"
-              [value]="countryForm().isoCode" (input)="updateFormField('isoCode', $event)" />
+            <input
+              type="text"
+              class="form-control text-uppercase"
+              placeholder="Ej: ARG"
+              maxlength="3"
+              [value]="countryForm().isoCode"
+              (input)="updateFormField('isoCode', $event)"
+            />
 
             <div class="form-text">
               Usá el código ISO de 3 letras.
@@ -154,16 +170,20 @@
         </div>
 
         <div class="modal-footer border-top">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            data-bs-dismiss="modal"
+          >
             Cancelar
           </button>
 
-          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">
-            @if (isEditing()) {
-            Guardar cambios
-            } @else {
+          <button
+            type="submit"
+            class="btn btn-primary"
+            data-bs-dismiss="modal"
+          >
             Crear país
-            }
           </button>
         </div>
       </form>
@@ -171,6 +191,5 @@
     </div>
   </div>
 </div>
-
 
 <app-footer />

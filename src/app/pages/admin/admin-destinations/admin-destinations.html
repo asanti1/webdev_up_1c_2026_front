@@ -22,13 +22,8 @@
       </p>
     </div>
 
-    <button
-      type="button"
-      class="btn btn-primary"
-      data-bs-toggle="modal"
-      data-bs-target="#destinationModal"
-      (click)="openCreateModal()"
-    >
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#destinationModal"
+      (click)="openCreateModal()">
       <i class="bi bi-plus-lg"></i>
       Nuevo destino
     </button>
@@ -44,90 +39,73 @@
               <i class="bi bi-search"></i>
             </span>
 
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Buscar destino..."
-              (input)="onSearch($event)"
-            />
+            <input type="text" class="form-control" placeholder="Buscar destino..." (input)="onSearch($event)" />
           </div>
         </div>
       </div>
 
       @if (destinationsResponse().data.length === 0) {
 
-        <div class="alert alert-light border text-center py-5 mb-0">
-          <h2 class="h5 fw-bold mb-2">
-            No se encontraron destinos
-          </h2>
+      <div class="alert alert-light border text-center py-5 mb-0">
+        <h2 class="h5 fw-bold mb-2">
+          No se encontraron destinos
+        </h2>
 
-          <p class="text-muted mb-0">
-            Probá con otra búsqueda o creá un nuevo destino.
-          </p>
-        </div>
+        <p class="text-muted mb-0">
+          Probá con otra búsqueda o creá un nuevo destino.
+        </p>
+      </div>
 
       } @else {
 
-        <div class="table-responsive">
-          <table class="table align-middle">
-            <thead>
-              <tr>
-                <th>Destino</th>
-                <th>Descripción</th>
-                <th>País</th>
-                <th class="text-end">Acciones</th>
-              </tr>
-            </thead>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Destino</th>
+              <th>Descripción</th>
+              <th>País</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
 
-            <tbody>
-              @for (destination of destinationsResponse().data; track destination.id) {
-                <tr>
-                  <td class="fw-semibold">
-                    {{ destination.name }}
-                  </td>
+          <tbody>
+            @for (destination of destinationsResponse().data; track destination.id) {
+            <tr>
+              <td class="fw-semibold">
+                {{ destination.name }}
+              </td>
 
-                  <td class="text-muted">
-                    {{ destination.description }}
-                  </td>
+              <td class="text-muted">
+                {{ destination.description }}
+              </td>
 
-                  <td>
-                    <span class="badge text-bg-light border">
-                      {{ destination.country.name }}
-                    </span>
-                  </td>
+              <td>
+                <span class="badge text-bg-light border">
+                  {{ destination.country.name }}
+                </span>
+              </td>
 
-                  <td class="text-end">
-                    <div class="btn-group btn-group-sm">
-                      <button
-                        type="button"
-                        class="btn btn-outline-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#destinationModal"
-                        (click)="openEditModal(destination)"
-                      >
-                        <i class="bi bi-pencil"></i>
-                      </button>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                    data-bs-target="#destinationModal" (click)="openEditModal(destination)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
 
-                      <button
-                        type="button"
-                        class="btn btn-outline-danger"
-                        (click)="deleteDestination(destination)"
-                      >
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+                  <button type="button" class="btn btn-outline-danger" (click)="deleteDestination(destination)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
-        <app-package-pagination
-          [currentPage]="destinationsResponse().page"
-          [totalPages]="destinationsResponse().totalPages"
-          (pageChange)="goToPage($event)"
-        />
+      <app-package-pagination [currentPage]="destinationsResponse().page"
+        [totalPages]="destinationsResponse().totalPages" (pageChange)="goToPage($event)" />
 
       }
 
@@ -136,31 +114,20 @@
 
 </main>
 
-<div
-  class="modal fade"
-  id="destinationModal"
-  tabindex="-1"
-  aria-labelledby="destinationModalLabel"
-  aria-hidden="true"
->
+<div class="modal fade" id="destinationModal" tabindex="-1" aria-labelledby="destinationModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content rounded-4 border-0">
 
       <div class="modal-header border-bottom">
         <h2 class="modal-title h5 fw-bold" id="destinationModalLabel">
           @if (isEditing()) {
-            Editar destino
+          Editar destino
           } @else {
-            Nuevo destino
+          Nuevo destino
           }
         </h2>
 
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Cerrar"
-        ></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
 
       <form (submit)="saveDestination(); $event.preventDefault()">
@@ -173,13 +140,8 @@
                 Nombre del destino
               </label>
 
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Ej: Bariloche"
-                [value]="destinationForm().name"
-                (input)="updateFormField('name', $event)"
-              />
+              <input type="text" class="form-control" placeholder="Ej: Bariloche" [value]="destinationForm().name"
+                (input)="updateFormField('name', $event)" />
             </div>
 
             <div class="col-12 col-md-6">
@@ -187,19 +149,16 @@
                 País
               </label>
 
-              <select
-                class="form-select"
-                [value]="destinationForm().countryId"
-                (change)="updateFormField('countryId', $event)"
-              >
+              <select class="form-select" [value]="destinationForm().countryId"
+                (change)="updateFormField('countryId', $event)">
                 <option value="">
                   Seleccionar país
                 </option>
 
-                @for (country of countryOptions; track country.id) {
-                  <option [value]="country.id">
-                    {{ country.name }}
-                  </option>
+                @for (country of countryOptions(); track country.id) {
+                <option [value]="country.id">
+                  {{ country.name }}
+                </option>
                 }
               </select>
             </div>
@@ -209,13 +168,8 @@
                 Descripción
               </label>
 
-              <textarea
-                class="form-control"
-                rows="4"
-                placeholder="Descripción del destino"
-                [value]="destinationForm().description"
-                (input)="updateFormField('description', $event)"
-              ></textarea>
+              <textarea class="form-control" rows="4" placeholder="Descripción del destino"
+                [value]="destinationForm().description" (input)="updateFormField('description', $event)"></textarea>
             </div>
 
           </div>
@@ -223,23 +177,15 @@
         </div>
 
         <div class="modal-footer border-top">
-          <button
-            type="button"
-            class="btn btn-outline-secondary"
-            data-bs-dismiss="modal"
-          >
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
             Cancelar
           </button>
 
-          <button
-            type="submit"
-            class="btn btn-primary"
-            data-bs-dismiss="modal"
-          >
+          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">
             @if (isEditing()) {
-              Guardar cambios
+            Guardar cambios
             } @else {
-              Crear destino
+            Crear destino
             }
           </button>
         </div>

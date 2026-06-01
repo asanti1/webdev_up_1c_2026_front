@@ -1,142 +1,82 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Header } from '../../header/header';
 import { Footer } from '../../footer/footer';
 import { PackagePagination } from '../../home/package-pagination/package-pagination';
+import {
+  Reservation,
+  ReservationStatus,
+} from '../../../core/models/reservation';
+import { Reservations } from '../../../core/services/reservations';
 
-type ReservationStatus = 'pending' | 'confirmed' | 'cancelled';
-
-interface ReservationMock {
-  id: string;
-  reservationDate: string;
-  totalPassengers: number;
-  finalPrice: number;
-  notes: string | null;
-  status: ReservationStatus;
-  destination: {
-    id: string;
-    name: string;
-  };
-  package: {
-    id: string;
-    title: string;
-    startDate: string;
-    endDate: string;
-  };
-  user: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-}
+type ReservationStatusFilter = ReservationStatus | 'all';
 
 @Component({
   selector: 'app-admin-reservations',
   standalone: true,
-  imports: [Header, Footer, RouterLink, PackagePagination, CurrencyPipe, DatePipe],
+  imports: [
+    Header,
+    Footer,
+    RouterLink,
+    PackagePagination,
+    CurrencyPipe,
+    DatePipe,
+  ],
   templateUrl: './admin-reservations.html',
   styleUrl: './admin-reservations.css',
 })
 export class AdminReservations {
-  reservations = signal<ReservationMock[]>([
-    {
-      id: '1',
-      reservationDate: '2026-05-20T10:30:00.000Z',
-      totalPassengers: 2,
-      finalPrice: 1700000,
-      notes: 'Viajan dos adultos.',
-      status: 'pending',
-      destination: { id: '1', name: 'Bariloche' },
-      package: {
-        id: '1',
-        title: 'Bariloche Aventura',
-        startDate: '2026-07-10',
-        endDate: '2026-07-17',
-      },
-      user: {
-        id: '1',
-        firstName: 'Juan',
-        lastName: 'Test',
-        email: 'juan.test@example.com',
-      },
-    },
-    {
-      id: '2',
-      reservationDate: '2026-05-21T14:15:00.000Z',
-      totalPassengers: 1,
-      finalPrice: 620000,
-      notes: null,
-      status: 'confirmed',
-      destination: { id: '2', name: 'Mendoza' },
-      package: {
-        id: '2',
-        title: 'Mendoza Relax',
-        startDate: '2026-08-05',
-        endDate: '2026-08-10',
-      },
-      user: {
-        id: '2',
-        firstName: 'María',
-        lastName: 'Gómez',
-        email: 'maria.gomez@example.com',
-      },
-    },
-    {
-      id: '3',
-      reservationDate: '2026-05-22T09:45:00.000Z',
-      totalPassengers: 4,
-      finalPrice: 3920000,
-      notes: 'Familia con dos menores.',
-      status: 'cancelled',
-      destination: { id: '3', name: 'Ushuaia' },
-      package: {
-        id: '3',
-        title: 'Ushuaia Fin del Mundo',
-        startDate: '2026-09-12',
-        endDate: '2026-09-18',
-      },
-      user: {
-        id: '3',
-        firstName: 'Carlos',
-        lastName: 'Pérez',
-        email: 'carlos.perez@example.com',
-      },
-    },
-  ]);
+  private reservationsService = inject(Reservations);
+
+  reservations = signal<Reservation[]>([]);
 
   searchTerm = signal('');
-  statusFilter = signal<ReservationStatus | 'all'>('all');
+  statusFilter = signal<ReservationStatusFilter>('all');
+
   currentPage = signal(1);
   pageSize = signal(5);
 
+  ngOnInit(): void {
+    this.loadReservations();
+  }
+
+  loadReservations(): void {
+    const status = this.statusFilter() === 'all'
+      ? undefined
+      : this.statusFilter() as ReservationStatus;
+
+    this.reservationsService.getAll(1, 50, status).subscribe({
+      next: (response) => {
+        this.reservations.set(response.data);
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
+
   filteredReservations = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const status = this.statusFilter();
 
-    return this.reservations().filter(reservation => {
-      const matchesSearch =
-        reservation.package.title.toLowerCase().includes(term) ||
-        reservation.destination.name.toLowerCase().includes(term) ||
-        reservation.user.firstName.toLowerCase().includes(term) ||
-        reservation.user.lastName.toLowerCase().includes(term) ||
-        reservation.user.email.toLowerCase().includes(term);
-
-      const matchesStatus =
-        status === 'all' ||
-        reservation.status === status;
-
-      return matchesSearch && matchesStatus;
-    });
+    return this.reservations().filter(reservation =>
+      reservation.package.title.toLowerCase().includes(term) ||
+      reservation.destination.name.toLowerCase().includes(term) ||
+      reservation.user.firstName.toLowerCase().includes(term) ||
+      reservation.user.lastName.toLowerCase().includes(term) ||
+      reservation.user.email.toLowerCase().includes(term) ||
+      reservation.status.toLowerCase().includes(term)
+    );
   });
 
   reservationsResponse = computed(() => {
     const filtered = this.filteredReservations();
+
     const page = this.currentPage();
     const limit = this.pageSize();
     const total = filtered.length;
     const totalPages = Math.ceil(total / limit);
+
     const start = (page - 1) * limit;
     const end = start + limit;
 
@@ -157,38 +97,43 @@ export class AdminReservations {
   }
 
   onStatusChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value as ReservationStatus | 'all';
+    const value = (event.target as HTMLSelectElement).value as ReservationStatusFilter;
 
     this.statusFilter.set(value);
     this.currentPage.set(1);
+    this.loadReservations();
   }
 
   goToPage(page: number): void {
     this.currentPage.set(page);
   }
 
-  updateStatus(reservation: ReservationMock, status: ReservationStatus): void {
-    this.reservations.update(current =>
-      current.map(item =>
-        item.id === reservation.id
-          ? { ...item, status }
-          : item
-      )
-    );
+  updateStatus(reservation: Reservation, status: ReservationStatus): void {
+    this.reservationsService.updateStatus(reservation.id, status).subscribe({
+      next: () => {
+        this.loadReservations();
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
   }
 
-  deleteReservation(reservation: ReservationMock): void {
+  deleteReservation(reservation: Reservation): void {
     const confirmed = confirm(`¿Seguro que querés cancelar la reserva de ${reservation.user.firstName} ${reservation.user.lastName}?`);
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
-    this.reservations.update(current =>
-      current.map(item =>
-        item.id === reservation.id
-          ? { ...item, status: 'cancelled' }
-          : item
-      )
-    );
+    this.reservationsService.delete(reservation.id).subscribe({
+      next: () => {
+        this.loadReservations();
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
   }
 
   statusLabel(status: ReservationStatus): string {

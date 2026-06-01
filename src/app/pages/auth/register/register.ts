@@ -1,10 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { email, form, FormField, min, required, validate } from '@angular/forms/signals';
-import { Country, CountryService } from '../../../core/services/country';
+import { Countries } from '../../../core/services/countries';
 import { Auth } from '../../../core/auth/auth';
 import { AuthState } from '../../../core/auth/auth-state';
 import { Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
+import { Country } from '../../../core/models/country';
 
 interface RegisterData {
   firstName: string;
@@ -23,7 +24,7 @@ interface RegisterData {
   styleUrl: './register.css',
 })
 export class Register {
-  private countryService = inject(CountryService);
+  private countryService = inject(Countries);
   private authService = inject(Auth);
   private authState = inject(AuthState);
   private router = inject(Router);
@@ -53,12 +54,13 @@ export class Register {
     this.isLoadingCountries.set(true);
     this.countriesError.set(null);
 
-    this.countryService.getAll().subscribe({
-      next: (countries) => {
-        this.countries.set(countries);
+    this.countryService.getAll(1, 50).subscribe({
+      next: (response) => {
+        this.countries.set(response.data);
       },
       error: () => {
         this.countriesError.set('No se pudieron cargar los países');
+        this.isLoadingCountries.set(false);
       },
       complete: () => {
         this.isLoadingCountries.set(false);

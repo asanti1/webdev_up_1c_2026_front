@@ -18,13 +18,8 @@
       </p>
     </div>
 
-    <button
-      type="button"
-      class="btn btn-primary"
-      data-bs-toggle="modal"
-      data-bs-target="#userModal"
-      (click)="openCreateModal()"
-    >
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal"
+      (click)="openCreateModal()">
       <i class="bi bi-plus-lg"></i>
       Nuevo usuario
     </button>
@@ -40,21 +35,12 @@
               <i class="bi bi-search"></i>
             </span>
 
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Buscar usuario..."
-              (input)="onSearch($event)"
-            />
+            <input type="text" class="form-control" placeholder="Buscar usuario..." (input)="onSearch($event)" />
           </div>
         </div>
 
         <div class="col-12 col-md-6 col-lg-3">
-          <select
-            class="form-select"
-            [value]="roleFilter()"
-            (change)="onRoleChange($event)"
-          >
+          <select class="form-select" [value]="roleFilter()" (change)="onRoleChange($event)">
             <option value="all">Todos los roles</option>
             <option value="USER">Usuarios</option>
             <option value="ADMIN">Administradores</option>
@@ -64,94 +50,82 @@
 
       @if (usersResponse().data.length === 0) {
 
-        <div class="alert alert-light border text-center py-5 mb-0">
-          <h2 class="h5 fw-bold mb-2">No se encontraron usuarios</h2>
+      <div class="alert alert-light border text-center py-5 mb-0">
+        <h2 class="h5 fw-bold mb-2">No se encontraron usuarios</h2>
 
-          <p class="text-muted mb-0">
-            Probá con otra búsqueda o creá un nuevo usuario.
-          </p>
-        </div>
+        <p class="text-muted mb-0">
+          Probá con otra búsqueda o creá un nuevo usuario.
+        </p>
+      </div>
 
       } @else {
 
-        <div class="table-responsive">
-          <table class="table align-middle">
-            <thead>
-              <tr>
-                <th>Usuario</th>
-                <th>Edad</th>
-                <th>País</th>
-                <th>Rol</th>
-                <th>Teléfono</th>
-                <th class="text-end">Acciones</th>
-              </tr>
-            </thead>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Edad</th>
+              <th>País</th>
+              <th>Rol</th>
+              <th>Teléfono</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
 
-            <tbody>
-              @for (user of usersResponse().data; track user.id) {
-                <tr>
-                  <td>
-                    <p class="fw-semibold mb-0">
-                      {{ user.firstName }} {{ user.lastName }}
-                    </p>
+          <tbody>
+            @for (user of usersResponse().data; track user.id) {
+            <tr>
+              <td>
+                <p class="fw-semibold mb-0">
+                  {{ user.firstName }} {{ user.lastName }}
+                </p>
 
-                    <p class="text-muted small mb-0">
-                      {{ user.email }}
-                    </p>
-                  </td>
+                <p class="text-muted small mb-0">
+                  {{ user.email }}
+                </p>
+              </td>
 
-                  <td>
-                    {{ user.age }}
-                  </td>
+              <td>
+                {{ user.age }}
+              </td>
 
-                  <td>
-                    <span class="badge text-bg-light border">
-                      {{ user.country.name }} · {{ user.country.isoCode }}
-                    </span>
-                  </td>
+              <td>
+                <span class="badge text-bg-light border">
+                  {{ user.country.name }} · {{ user.country.isoCode }}
+                </span>
+              </td>
 
-                  <td>
-                    <span class="badge {{ roleClass(user.role.name) }}">
-                      {{ user.role.name }}
-                    </span>
-                  </td>
+              <td>
+                <span class="badge {{ roleClass(user.role.name) }}">
+                  {{ user.role.name }}
+                </span>
+              </td>
 
-                  <td>
-                    {{ user.cellphoneNumber }}
-                  </td>
+              <td>
+                {{ user.cellphoneNumber }}
+              </td>
 
-                  <td class="text-end">
-                    <div class="btn-group btn-group-sm">
-                      <button
-                        type="button"
-                        class="btn btn-outline-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#userModal"
-                        (click)="openEditModal(user)"
-                      >
-                        <i class="bi bi-pencil"></i>
-                      </button>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                    data-bs-target="#userModal" (click)="openEditModal(user)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
 
-                      <button
-                        type="button"
-                        class="btn btn-outline-danger"
-                        (click)="deleteUser(user)"
-                      >
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+                  <button type="button" class="btn btn-outline-danger" (click)="deleteUser(user)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
-        <app-package-pagination
-          [currentPage]="usersResponse().page"
-          [totalPages]="usersResponse().totalPages"
-          (pageChange)="goToPage($event)"
-        />
+      <app-package-pagination [currentPage]="usersResponse().page" [totalPages]="usersResponse().totalPages"
+        (pageChange)="goToPage($event)" />
 
       }
 
@@ -160,31 +134,20 @@
 
 </main>
 
-<div
-  class="modal fade"
-  id="userModal"
-  tabindex="-1"
-  aria-labelledby="userModalLabel"
-  aria-hidden="true"
->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content rounded-4 border-0">
 
       <div class="modal-header border-bottom">
         <h2 class="modal-title h5 fw-bold" id="userModalLabel">
           @if (isEditing()) {
-            Editar usuario
+          Editar usuario
           } @else {
-            Nuevo usuario
+          Nuevo usuario
           }
         </h2>
 
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Cerrar"
-        ></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
 
       <form (submit)="saveUser(); $event.preventDefault()">
@@ -195,73 +158,56 @@
             <div class="col-12 col-md-6">
               <label class="form-label">Nombre</label>
 
-              <input
-                type="text"
-                class="form-control"
-                [value]="userForm().firstName"
-                (input)="updateFormField('firstName', $event)"
-              />
+              <input type="text" class="form-control" [value]="userForm().firstName"
+                (input)="updateFormField('firstName', $event)" />
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label">Apellido</label>
 
-              <input
-                type="text"
-                class="form-control"
-                [value]="userForm().lastName"
-                (input)="updateFormField('lastName', $event)"
-              />
+              <input type="text" class="form-control" [value]="userForm().lastName"
+                (input)="updateFormField('lastName', $event)" />
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label">Email</label>
 
-              <input
-                type="email"
-                class="form-control"
-                [value]="userForm().email"
-                (input)="updateFormField('email', $event)"
-              />
+              <input type="email" class="form-control" [value]="userForm().email"
+                (input)="updateFormField('email', $event)" />
             </div>
+            @if (!isEditing()) {
+            <div class="col-12 col-md-6">
+              <label class="form-label">Contraseña</label>
 
+              <input type="password" class="form-control" [value]="userForm().password"
+                (input)="updateFormField('password', $event)" />
+            </div>
+            }
             <div class="col-12 col-md-6">
               <label class="form-label">Teléfono</label>
 
-              <input
-                type="text"
-                class="form-control"
-                [value]="userForm().cellphoneNumber"
-                (input)="updateFormField('cellphoneNumber', $event)"
-              />
+              <input type="text" class="form-control" [value]="userForm().cellphoneNumber"
+                (input)="updateFormField('cellphoneNumber', $event)" />
             </div>
 
             <div class="col-12 col-md-4">
               <label class="form-label">Edad</label>
 
-              <input
-                type="number"
-                class="form-control"
-                min="1"
-                [value]="userForm().age"
-                (input)="updateFormField('age', $event)"
-              />
+              <input type="number" class="form-control" min="1" [value]="userForm().age"
+                (input)="updateFormField('age', $event)" />
             </div>
 
             <div class="col-12 col-md-4">
               <label class="form-label">País</label>
 
-              <select
-                class="form-select"
-                [value]="userForm().countryId"
-                (change)="updateFormField('countryId', $event)"
-              >
+              <select class="form-select" [value]="userForm().countryId"
+                (change)="updateFormField('countryId', $event)">
                 <option value="">Seleccionar país</option>
 
-                @for (country of countryOptions; track country.id) {
-                  <option [value]="country.id">
-                    {{ country.name }}
-                  </option>
+                @for (country of countryOptions(); track country.id) {
+                <option [value]="country.id">
+                  {{ country.name }}
+                </option>
                 }
               </select>
             </div>
@@ -269,15 +215,11 @@
             <div class="col-12 col-md-4">
               <label class="form-label">Rol</label>
 
-              <select
-                class="form-select"
-                [value]="userForm().role"
-                (change)="updateFormField('role', $event)"
-              >
+              <select class="form-select" [value]="userForm().role" (change)="updateFormField('role', $event)">
                 @for (role of roleOptions; track role.id) {
-                  <option [value]="role.name">
-                    {{ role.name }}
-                  </option>
+                <option [value]="role.name">
+                  {{ role.name }}
+                </option>
                 }
               </select>
             </div>
@@ -287,23 +229,15 @@
         </div>
 
         <div class="modal-footer border-top">
-          <button
-            type="button"
-            class="btn btn-outline-secondary"
-            data-bs-dismiss="modal"
-          >
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
             Cancelar
           </button>
 
-          <button
-            type="submit"
-            class="btn btn-primary"
-            data-bs-dismiss="modal"
-          >
+          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">
             @if (isEditing()) {
-              Guardar cambios
+            Guardar cambios
             } @else {
-              Crear usuario
+            Crear usuario
             }
           </button>
         </div>

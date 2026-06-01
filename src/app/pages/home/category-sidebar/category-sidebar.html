@@ -5,7 +5,7 @@
     </h2>
 
     <div class="d-grid gap-2">
-      @for (category of categories; track category) {
+      @for (category of categories(); track category) {
       <button type="button" class="btn btn-sm text-start" [class.btn-primary]="selectedCategory() === category"
         [class.btn-light]="selectedCategory() !== category" [class.border]="selectedCategory() !== category"
         (click)="selectCategory(category)">

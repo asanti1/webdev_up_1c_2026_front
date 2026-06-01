@@ -1,20 +1,15 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Header } from '../../header/header';
 import { Footer } from '../../footer/footer';
 import { PackagePagination } from '../../home/package-pagination/package-pagination';
-
-interface CountryOption {
-  id: string;
-  name: string;
-}
-
-interface DestinationMock {
-  id: string;
-  name: string;
-  description: string;
-  country: CountryOption;
-}
+import { Destination } from '../../../core/models/destination';
+import { Country } from '../../../core/models/country';
+import {
+  DestinationPayload,
+  Destinations,
+} from '../../../core/services/destinations';
+import { Countries } from '../../../core/services/countries';
 
 type DestinationFormModel = {
   name: string;
@@ -35,41 +30,13 @@ type DestinationFormModel = {
   styleUrl: './admin-destinations.css',
 })
 export class AdminDestinations {
-  countryOptions: CountryOption[] = [
-    { id: '1', name: 'Argentina' },
-    { id: '2', name: 'Brasil' },
-    { id: '3', name: 'Chile' },
-    { id: '4', name: 'Uruguay' },
-  ];
+  private destinationsService = inject(Destinations);
+  private countriesService = inject(Countries);
 
-  destinations = signal<DestinationMock[]>([
-    {
-      id: '1',
-      name: 'Bariloche',
-      description: 'Destino patagónico con montañas, lagos y actividades al aire libre.',
-      country: { id: '1', name: 'Argentina' },
-    },
-    {
-      id: '2',
-      name: 'Mendoza',
-      description: 'Destino reconocido por bodegas, gastronomía y paisajes cordilleranos.',
-      country: { id: '1', name: 'Argentina' },
-    },
-    {
-      id: '3',
-      name: 'Río de Janeiro',
-      description: 'Ciudad costera con playas, cultura urbana y atractivos turísticos.',
-      country: { id: '2', name: 'Brasil' },
-    },
-    {
-      id: '4',
-      name: 'Santiago',
-      description: 'Capital chilena con oferta cultural, gastronómica y cercanía a la cordillera.',
-      country: { id: '3', name: 'Chile' },
-    },
-  ]);
+  destinations = signal<Destination[]>([]);
+  countryOptions = signal<Country[]>([]);
 
-  editingDestination = signal<DestinationMock | null>(null);
+  editingDestination = signal<Destination | null>(null);
 
   destinationForm = signal<DestinationFormModel>({
     name: '',
@@ -82,6 +49,33 @@ export class AdminDestinations {
   searchTerm = signal('');
   currentPage = signal(1);
   pageSize = signal(5);
+
+  ngOnInit(): void {
+    this.loadDestinations();
+    this.loadCountries();
+  }
+
+  loadDestinations(): void {
+    this.destinationsService.getAll(1, 50).subscribe({
+      next: (response) => {
+        this.destinations.set(response.data);
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
+
+  loadCountries(): void {
+    this.countriesService.getAll(1, 50).subscribe({
+      next: (response) => {
+        this.countryOptions.set(response.data);
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
 
   filteredDestinations = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
@@ -134,7 +128,7 @@ export class AdminDestinations {
     });
   }
 
-  openEditModal(destination: DestinationMock): void {
+  openEditModal(destination: Destination): void {
     this.editingDestination.set(destination);
 
     this.destinationForm.set({
@@ -156,68 +150,62 @@ export class AdminDestinations {
   saveDestination(): void {
     const form = this.destinationForm();
 
-    if (!form.name.trim() || !form.description.trim() || !form.countryId) {
-      return;
-    }
+    const payload: DestinationPayload = {
+      name: form.name.trim(),
+      description: form.description.trim(),
+      countryId: form.countryId,
+    };
 
-    const country = this.countryOptions.find(item => item.id === form.countryId);
-
-    if (!country) {
+    if (!payload.name || !payload.description || !payload.countryId) {
       return;
     }
 
     const editing = this.editingDestination();
 
-    /*
-      Después:
-      if (editing) {
-        destinationService.update(editing.id, form)
-      } else {
-        destinationService.create(form)
-      }
-    */
-
     if (editing) {
-      this.destinations.update(current =>
-        current.map(destination =>
-          destination.id === editing.id
-            ? {
-                ...destination,
-                name: form.name.trim(),
-                description: form.description.trim(),
-                country,
-              }
-            : destination
-        )
-      );
+      this.destinationsService.update(editing.id, payload).subscribe({
+        next: () => {
+          this.loadDestinations();
+        },
+        error: (error) => {
+          console.error(error);
+        },
+      });
 
       return;
     }
 
-    const newDestination: DestinationMock = {
-      id: crypto.randomUUID(),
-      name: form.name.trim(),
-      description: form.description.trim(),
-      country,
-    };
+    this.destinationsService.create(payload).subscribe({
+      next: () => {
+        this.currentPage.set(1);
+        this.loadDestinations();
 
-    this.destinations.update(current => [
-      newDestination,
-      ...current,
-    ]);
-
-    this.currentPage.set(1);
+        this.destinationForm.set({
+          name: '',
+          description: '',
+          countryId: '',
+        });
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
   }
 
-  deleteDestination(destination: DestinationMock): void {
-    const confirmed = confirm(`¿Seguro que querés eliminar ${destination.name}?`);
+  deleteDestination(destination: Destination): void {
+    const confirmed = confirm(`¿Seguro que querés eliminar el destino ${destination.name}?`);
 
     if (!confirmed) {
       return;
     }
 
-    this.destinations.update(current =>
-      current.filter(item => item.id !== destination.id)
-    );
+    this.destinationsService.delete(destination.id).subscribe({
+      next: () => {
+        this.loadDestinations();
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
   }
 }

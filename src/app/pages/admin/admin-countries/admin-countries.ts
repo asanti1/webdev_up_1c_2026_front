@@ -1,14 +1,10 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Header } from '../../header/header';
 import { Footer } from '../../footer/footer';
 import { PackagePagination } from '../../home/package-pagination/package-pagination';
-
-interface CountryMock {
-  id: string;
-  name: string;
-  isoCode: string;
-}
+import { Countries } from '../../../core/services/countries';
+import { Country } from '../../../core/models/country';
 
 type CountryFormModel = {
   name: string;
@@ -28,29 +24,33 @@ type CountryFormModel = {
   styleUrl: './admin-countries.css',
 })
 export class AdminCountries {
-  countries = signal<CountryMock[]>([
-    { id: '1', name: 'Argentina', isoCode: 'ARG' },
-    { id: '2', name: 'Brasil', isoCode: 'BRA' },
-    { id: '3', name: 'Chile', isoCode: 'CHL' },
-    { id: '4', name: 'Uruguay', isoCode: 'URY' },
-    { id: '5', name: 'Perú', isoCode: 'PER' },
-    { id: '6', name: 'México', isoCode: 'MEX' },
-    { id: '7', name: 'España', isoCode: 'ESP' },
-  ]);
+  private countriesService = inject(Countries);
 
-
-  editingCountry = signal<CountryMock | null>(null);
+  countries = signal<Country[]>([]);
 
   countryForm = signal<CountryFormModel>({
     name: '',
     isoCode: '',
   });
 
-  isEditing = computed(() => this.editingCountry() !== null);
-
   searchTerm = signal('');
   currentPage = signal(1);
   pageSize = signal(5);
+
+  ngOnInit(): void {
+    this.loadCountries();
+  }
+
+  loadCountries(): void {
+    this.countriesService.getAll(1, 50).subscribe({
+      next: (response) => {
+        this.countries.set(response.data);
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
 
   filteredCountries = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
@@ -92,40 +92,10 @@ export class AdminCountries {
     this.currentPage.set(page);
   }
 
-  createCountry(): void {
-    console.log('Crear país');
-  }
-
-  editCountry(country: CountryMock): void {
-    console.log('Editar país', country);
-  }
-
-  deleteCountry(country: CountryMock): void {
-    const confirmed = confirm(`¿Seguro que querés eliminar ${country.name}?`);
-
-    if (!confirmed) {
-      return;
-    }
-
-    this.countries.update(current =>
-      current.filter(item => item.id !== country.id)
-    );
-  }
   openCreateModal(): void {
-    this.editingCountry.set(null);
-
     this.countryForm.set({
       name: '',
       isoCode: '',
-    });
-  }
-
-  openEditModal(country: CountryMock): void {
-    this.editingCountry.set(country);
-
-    this.countryForm.set({
-      name: country.name,
-      isoCode: country.isoCode,
     });
   }
 
@@ -141,43 +111,28 @@ export class AdminCountries {
   saveCountry(): void {
     const form = this.countryForm();
 
-    if (!form.name.trim() || !form.isoCode.trim()) {
-      return;
-    }
-
-    const editing = this.editingCountry();
-    /*if (editing) {
-      countriesService.update(editing.id, form)
-    } else {
-      countriesService.create(form)
-    }*/
-    if (editing) {
-      this.countries.update(current =>
-        current.map(country =>
-          country.id === editing.id
-            ? {
-              ...country,
-              name: form.name.trim(),
-              isoCode: form.isoCode.trim().toUpperCase(),
-            }
-            : country
-        )
-      );
-
-      return;
-    }
-
-    const newCountry: CountryMock = {
-      id: crypto.randomUUID(),
+    const payload = {
       name: form.name.trim(),
       isoCode: form.isoCode.trim().toUpperCase(),
     };
 
-    this.countries.update(current => [
-      newCountry,
-      ...current,
-    ]);
+    if (!payload.name || !payload.isoCode) {
+      return;
+    }
 
-    this.currentPage.set(1);
+    this.countriesService.create(payload).subscribe({
+      next: () => {
+        this.currentPage.set(1);
+        this.loadCountries();
+
+        this.countryForm.set({
+          name: '',
+          isoCode: '',
+        });
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
   }
 }
