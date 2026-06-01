@@ -4,7 +4,6 @@ import { Component, input, output } from '@angular/core';
   selector: 'app-admin-search-input',
   standalone: true,
   templateUrl: './admin-search-input.html',
-  styleUrl: './admin-search-input.css',
 })
 export class AdminSearchInput {
   placeholder = input('Buscar...');

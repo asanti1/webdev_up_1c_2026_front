@@ -1,12 +1,10 @@
-import { Component, input, output } from '@angular/core';
-import { inject, OnInit, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { CategoryPackages } from '../../../core/services/category-packages';
 
 @Component({
   selector: 'app-category-sidebar',
   imports: [],
   templateUrl: './category-sidebar.html',
-  styleUrl: './category-sidebar.css',
 })
 export class CategorySidebar {
   selectedCategory = input.required<string>();

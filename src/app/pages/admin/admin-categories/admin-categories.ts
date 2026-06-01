@@ -27,7 +27,6 @@ type CategoryFormModel = {
     AdminSearchInput
   ],
   templateUrl: './admin-categories.html',
-  styleUrl: './admin-categories.css',
 })
 export class AdminCategories {
   private categoryPackagesService = inject(CategoryPackages);

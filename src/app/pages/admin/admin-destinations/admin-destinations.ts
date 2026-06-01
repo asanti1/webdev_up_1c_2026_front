@@ -34,7 +34,6 @@ type DestinationFormModel = {
     AdminSearchInput
 ],
   templateUrl: './admin-destinations.html',
-  styleUrl: './admin-destinations.css',
 })
 export class AdminDestinations {
   private destinationsService = inject(Destinations);

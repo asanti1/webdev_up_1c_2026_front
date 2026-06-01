@@ -5,7 +5,6 @@ import { Component, computed, input, output } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './package-pagination.html',
-  styleUrl: './package-pagination.css',
 })
 export class PackagePagination {
 

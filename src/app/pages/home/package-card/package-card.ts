@@ -5,7 +5,6 @@ import { RouterLink } from '@angular/router';
   selector: 'app-package-card',
   imports: [RouterLink],
   templateUrl: './package-card.html',
-  styleUrl: './package-card.css',
   standalone: true
 })
 export class PackageCard {

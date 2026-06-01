@@ -44,7 +44,6 @@ type UserFormModel = {
     AdminSearchInput
 ],
   templateUrl: './admin-users.html',
-  styleUrl: './admin-users.css',
 })
 export class AdminUsers {
   private usersService = inject(Users);

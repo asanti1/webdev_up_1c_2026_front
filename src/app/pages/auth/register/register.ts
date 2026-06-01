@@ -21,7 +21,6 @@ interface RegisterData {
   selector: 'app-register',
   imports: [FormField, RouterLink],
   templateUrl: './register.html',
-  styleUrl: './register.css',
 })
 export class Register {
   private countryService = inject(Countries);

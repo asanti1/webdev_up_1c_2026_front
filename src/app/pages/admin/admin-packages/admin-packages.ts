@@ -45,7 +45,6 @@ type PackageFormModel = {
     AdminSearchInput
 ],
   templateUrl: './admin-packages.html',
-  styleUrl: './admin-packages.css',
 })
 export class AdminPackages {
   private packagesService = inject(Packages);

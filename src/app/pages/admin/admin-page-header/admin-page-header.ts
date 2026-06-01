@@ -6,7 +6,6 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './admin-page-header.html',
-  styleUrl: './admin-page-header.css',
 })
 export class AdminPageHeader {
   title = input.required<string>();

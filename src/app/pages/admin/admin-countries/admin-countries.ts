@@ -27,7 +27,6 @@ type CountryFormModel = {
     AdminSearchInput
   ],
   templateUrl: './admin-countries.html',
-  styleUrl: './admin-countries.css',
 })
 export class AdminCountries {
   private countriesService = inject(Countries);

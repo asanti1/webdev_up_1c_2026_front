@@ -30,7 +30,6 @@ type ReservationStatusFilter = ReservationStatus | 'all';
     AdminSearchInput
 ],
   templateUrl: './admin-reservations.html',
-  styleUrl: './admin-reservations.css',
 })
 export class AdminReservations {
   private reservationsService = inject(Reservations);
