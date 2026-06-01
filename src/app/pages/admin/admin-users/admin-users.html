@@ -2,41 +2,15 @@
 
 <main class="container py-4 py-lg-5">
 
-  <a routerLink="/admin" class="btn btn-link text-decoration-none px-0 mb-4">
-    <i class="bi bi-arrow-left"></i>
-    Volver al panel
-  </a>
-
-  <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-    <div>
-      <p class="text-muted mb-1">Administración</p>
-
-      <h1 class="fw-bold mb-2">Usuarios</h1>
-
-      <p class="text-muted mb-0">
-        Gestioná usuarios registrados y sus permisos.
-      </p>
-    </div>
-
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal"
-      (click)="openCreateModal()">
-      <i class="bi bi-plus-lg"></i>
-      Nuevo usuario
-    </button>
-  </section>
+  <app-admin-page-header title="Países" description="Gestioná los países disponibles para usuarios y destinos."
+    buttonLabel="Nuevo Usuario" modalTarget="#countryModal" (createClicked)="openCreateModal()" />
 
   <section class="card border-0 shadow-sm rounded-4">
     <div class="card-body p-4">
 
       <div class="row g-3 mb-4">
         <div class="col-12 col-md-6 col-lg-4">
-          <div class="input-group">
-            <span class="input-group-text bg-white">
-              <i class="bi bi-search"></i>
-            </span>
-
-            <input type="text" class="form-control" placeholder="Buscar usuario..." (input)="onSearch($event)" />
-          </div>
+          <app-admin-search-input placeholder="Buscar usuarios..." (searchChange)="onSearch($event)" />
         </div>
 
         <div class="col-12 col-md-6 col-lg-3">
@@ -49,14 +23,8 @@
       </div>
 
       @if (usersResponse().data.length === 0) {
-
-      <div class="alert alert-light border text-center py-5 mb-0">
-        <h2 class="h5 fw-bold mb-2">No se encontraron usuarios</h2>
-
-        <p class="text-muted mb-0">
-          Probá con otra búsqueda o creá un nuevo usuario.
-        </p>
-      </div>
+      <app-admin-empty-state title="No se encontraron usuarios"
+        description="Probá con otra búsqueda o creá un nuevo país." />
 
       } @else {
 

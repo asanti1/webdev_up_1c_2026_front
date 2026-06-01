@@ -8,6 +8,7 @@ import { PackageCard } from "./package-card/package-card";
 import { PackagePagination } from "./package-pagination/package-pagination";
 import { Packages } from '../../core/services/packages';
 import { TravelPackage } from '../../core/models/travel-package';
+import { paginate } from '../../core/utils/paginate';
 
 export interface PaginatedResponse<T> {
   data: T[];
@@ -36,25 +37,13 @@ export class Home {
   loading = signal(false);
   error = signal<string | null>(null);
 
-  packagesResponse = computed(() => {
-    const filtered = this.filteredPackages();
-
-    const page = this.currentPage();
-    const limit = this.pageSize();
-    const total = filtered.length;
-    const totalPages = Math.ceil(total / limit);
-
-    const start = (page - 1) * limit;
-    const end = start + limit;
-
-    return {
-      data: filtered.slice(start, end),
-      total,
-      page,
-      limit,
-      totalPages,
-    };
-  });
+  packagesResponse = computed(() =>
+    paginate(
+      this.filteredPackages(),
+      this.currentPage(),
+      this.pageSize(),
+    )
+  );
 
   ngOnInit(): void {
     this.loadPackages();

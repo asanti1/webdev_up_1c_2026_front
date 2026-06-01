@@ -10,6 +10,11 @@ import {
   Destinations,
 } from '../../../core/services/destinations';
 import { Countries } from '../../../core/services/countries';
+import { paginate } from '../../../core/utils/paginate';
+import { API_LIST_LIMIT, DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
+import { AdminPageHeader } from '../admin-page-header/admin-page-header';
+import { AdminEmptyState } from '../admin-empty-state/admin-empty-state';
+import { AdminSearchInput } from "../admin-search-input/admin-search-input";
 
 type DestinationFormModel = {
   name: string;
@@ -23,9 +28,11 @@ type DestinationFormModel = {
   imports: [
     Header,
     Footer,
-    RouterLink,
     PackagePagination,
-  ],
+    AdminPageHeader,
+    AdminEmptyState,
+    AdminSearchInput
+],
   templateUrl: './admin-destinations.html',
   styleUrl: './admin-destinations.css',
 })
@@ -48,7 +55,7 @@ export class AdminDestinations {
 
   searchTerm = signal('');
   currentPage = signal(1);
-  pageSize = signal(5);
+  pageSize = signal(DEFAULT_ADMIN_PAGE_SIZE);
 
   ngOnInit(): void {
     this.loadDestinations();
@@ -56,7 +63,7 @@ export class AdminDestinations {
   }
 
   loadDestinations(): void {
-    this.destinationsService.getAll(1, 50).subscribe({
+    this.destinationsService.getAll(1, API_LIST_LIMIT).subscribe({
       next: (response) => {
         this.destinations.set(response.data);
       },
@@ -67,7 +74,7 @@ export class AdminDestinations {
   }
 
   loadCountries(): void {
-    this.countriesService.getAll(1, 50).subscribe({
+    this.countriesService.getAll(1, API_LIST_LIMIT).subscribe({
       next: (response) => {
         this.countryOptions.set(response.data);
       },
@@ -87,25 +94,13 @@ export class AdminDestinations {
     );
   });
 
-  destinationsResponse = computed(() => {
-    const filtered = this.filteredDestinations();
-
-    const page = this.currentPage();
-    const limit = this.pageSize();
-    const total = filtered.length;
-    const totalPages = Math.ceil(total / limit);
-
-    const start = (page - 1) * limit;
-    const end = start + limit;
-
-    return {
-      data: filtered.slice(start, end),
-      total,
-      page,
-      limit,
-      totalPages,
-    };
-  });
+  destinationsResponse = computed(() =>
+    paginate(
+      this.filteredDestinations(),
+      this.currentPage(),
+      this.pageSize(),
+    )
+  );
 
   onSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
@@ -156,9 +151,7 @@ export class AdminDestinations {
       countryId: form.countryId,
     };
 
-    if (!payload.name || !payload.description || !payload.countryId) {
-      return;
-    }
+    if (!payload.name || !payload.description || !payload.countryId) return;
 
     const editing = this.editingDestination();
 
@@ -167,9 +160,7 @@ export class AdminDestinations {
         next: () => {
           this.loadDestinations();
         },
-        error: (error) => {
-          console.error(error);
-        },
+        error: (error) => { console.error(error) },
       });
 
       return;
@@ -186,18 +177,14 @@ export class AdminDestinations {
           countryId: '',
         });
       },
-      error: (error) => {
-        console.error(error);
-      },
+      error: (error) => { console.error(error) },
     });
   }
 
   deleteDestination(destination: Destination): void {
     const confirmed = confirm(`¿Seguro que querés eliminar el destino ${destination.name}?`);
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     this.destinationsService.delete(destination.id).subscribe({
       next: () => {

@@ -4,6 +4,7 @@ import { inject, Injectable } from '@angular/core';
 import { PaginatedResponse } from '../models/paginated-response';
 import { User, UserRoleName } from '../models/user';
 import { environment } from '../../../enviroments/enviroment';
+import { API_LIST_LIMIT } from '../constants/pagination';
 
 export type UserCreatePayload = {
   firstName: string;
@@ -32,7 +33,7 @@ export class Users {
 
   private apiUrl = `${environment.apiUrl}/users`;
 
-  getAll(page = 1, limit = 50) {
+  getAll(page = 1, limit = API_LIST_LIMIT) {
     return this.http.get<PaginatedResponse<User>>(
       `${this.apiUrl}/?page=${page}&limit=${limit}`
     );

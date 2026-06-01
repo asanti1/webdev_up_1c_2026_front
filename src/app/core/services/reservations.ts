@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { PaginatedResponse } from '../models/paginated-response';
 import { Reservation, ReservationStatus } from '../models/reservation';
 import { environment } from '../../../enviroments/enviroment';
+import { API_LIST_LIMIT } from '../constants/pagination';
 
 export type CreateReservationPayload = {
   packageId: string;
@@ -17,7 +18,7 @@ export class Reservations {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/reservations`;
 
-  getAllMe(page = 1, limit = 50) {
+  getAllMe(page = 1, limit = API_LIST_LIMIT) {
     return this.http.get<PaginatedResponse<Reservation>>(
       `${this.apiUrl}/getAllMe?page=${page}&limit=${limit}`
     );

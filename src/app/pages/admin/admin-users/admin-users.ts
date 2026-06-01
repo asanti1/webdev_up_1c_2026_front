@@ -13,6 +13,11 @@ import {
   UserUpdatePayload,
   Users,
 } from '../../../core/services/users';
+import { paginate } from '../../../core/utils/paginate';
+import { API_LIST_LIMIT, DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
+import { AdminEmptyState } from '../admin-empty-state/admin-empty-state';
+import { AdminPageHeader } from '../admin-page-header/admin-page-header';
+import { AdminSearchInput } from "../admin-search-input/admin-search-input";
 
 type RoleFilter = UserRoleName | 'all';
 
@@ -33,9 +38,11 @@ type UserFormModel = {
   imports: [
     Header,
     Footer,
-    RouterLink,
     PackagePagination,
-  ],
+    AdminPageHeader,
+    AdminEmptyState,
+    AdminSearchInput
+],
   templateUrl: './admin-users.html',
   styleUrl: './admin-users.css',
 })
@@ -70,7 +77,7 @@ export class AdminUsers {
   roleFilter = signal<RoleFilter>('all');
 
   currentPage = signal(1);
-  pageSize = signal(5);
+  pageSize = signal(DEFAULT_ADMIN_PAGE_SIZE);
 
   ngOnInit(): void {
     this.loadUsers();
@@ -78,7 +85,7 @@ export class AdminUsers {
   }
 
   loadUsers(): void {
-    this.usersService.getAll(1, 50).subscribe({
+    this.usersService.getAll(1, API_LIST_LIMIT).subscribe({
       next: (response) => {
         this.users.set(response.data);
       },
@@ -114,26 +121,13 @@ export class AdminUsers {
     });
   });
 
-  usersResponse = computed(() => {
-    const filtered = this.filteredUsers();
-
-    const page = this.currentPage();
-    const limit = this.pageSize();
-
-    const total = filtered.length;
-    const totalPages = Math.ceil(total / limit);
-
-    const start = (page - 1) * limit;
-    const end = start + limit;
-
-    return {
-      data: filtered.slice(start, end),
-      total,
-      page,
-      limit,
-      totalPages,
-    };
-  });
+  usersResponse = computed(() =>
+    paginate(
+      this.filteredUsers(),
+      this.currentPage(),
+      this.pageSize(),
+    )
+  );
 
   onSearch(event: Event): void {
     this.searchTerm.set(

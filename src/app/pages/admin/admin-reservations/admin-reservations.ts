@@ -1,14 +1,18 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Header } from '../../header/header';
-import { Footer } from '../../footer/footer';
-import { PackagePagination } from '../../home/package-pagination/package-pagination';
+import { Component, computed, inject, signal } from '@angular/core';
+import { API_LIST_LIMIT, DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
 import {
   Reservation,
   ReservationStatus,
 } from '../../../core/models/reservation';
 import { Reservations } from '../../../core/services/reservations';
+import { paginate } from '../../../core/utils/paginate';
+import { Footer } from '../../footer/footer';
+import { Header } from '../../header/header';
+import { PackagePagination } from '../../home/package-pagination/package-pagination';
+import { AdminEmptyState } from '../admin-empty-state/admin-empty-state';
+import { AdminPageHeader } from '../admin-page-header/admin-page-header';
+import { AdminSearchInput } from "../admin-search-input/admin-search-input";
 
 type ReservationStatusFilter = ReservationStatus | 'all';
 
@@ -18,11 +22,13 @@ type ReservationStatusFilter = ReservationStatus | 'all';
   imports: [
     Header,
     Footer,
-    RouterLink,
     PackagePagination,
     CurrencyPipe,
     DatePipe,
-  ],
+    AdminPageHeader,
+    AdminEmptyState,
+    AdminSearchInput
+],
   templateUrl: './admin-reservations.html',
   styleUrl: './admin-reservations.css',
 })
@@ -35,7 +41,7 @@ export class AdminReservations {
   statusFilter = signal<ReservationStatusFilter>('all');
 
   currentPage = signal(1);
-  pageSize = signal(5);
+  pageSize = signal(DEFAULT_ADMIN_PAGE_SIZE);
 
   ngOnInit(): void {
     this.loadReservations();
@@ -46,7 +52,7 @@ export class AdminReservations {
       ? undefined
       : this.statusFilter() as ReservationStatus;
 
-    this.reservationsService.getAll(1, 50, status).subscribe({
+    this.reservationsService.getAll(1, API_LIST_LIMIT, status).subscribe({
       next: (response) => {
         this.reservations.set(response.data);
       },
@@ -69,25 +75,13 @@ export class AdminReservations {
     );
   });
 
-  reservationsResponse = computed(() => {
-    const filtered = this.filteredReservations();
-
-    const page = this.currentPage();
-    const limit = this.pageSize();
-    const total = filtered.length;
-    const totalPages = Math.ceil(total / limit);
-
-    const start = (page - 1) * limit;
-    const end = start + limit;
-
-    return {
-      data: filtered.slice(start, end),
-      total,
-      page,
-      limit,
-      totalPages,
-    };
-  });
+  reservationsResponse = computed(() =>
+    paginate(
+      this.filteredReservations(),
+      this.currentPage(),
+      this.pageSize(),
+    )
+  );
 
   onSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value;

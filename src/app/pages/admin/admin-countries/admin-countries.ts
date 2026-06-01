@@ -1,10 +1,14 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Header } from '../../header/header';
-import { Footer } from '../../footer/footer';
-import { PackagePagination } from '../../home/package-pagination/package-pagination';
-import { Countries } from '../../../core/services/countries';
+import { Component, computed, inject, signal } from '@angular/core';
+import { API_LIST_LIMIT, DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
 import { Country } from '../../../core/models/country';
+import { Countries } from '../../../core/services/countries';
+import { paginate } from '../../../core/utils/paginate';
+import { Footer } from '../../footer/footer';
+import { Header } from '../../header/header';
+import { PackagePagination } from '../../home/package-pagination/package-pagination';
+import { AdminPageHeader } from '../admin-page-header/admin-page-header';
+import { AdminEmptyState } from '../admin-empty-state/admin-empty-state';
+import { AdminSearchInput } from '../admin-search-input/admin-search-input';
 
 type CountryFormModel = {
   name: string;
@@ -17,15 +21,16 @@ type CountryFormModel = {
   imports: [
     Header,
     Footer,
-    RouterLink,
     PackagePagination,
+    AdminPageHeader,
+    AdminEmptyState,
+    AdminSearchInput
   ],
   templateUrl: './admin-countries.html',
   styleUrl: './admin-countries.css',
 })
 export class AdminCountries {
   private countriesService = inject(Countries);
-
   countries = signal<Country[]>([]);
 
   countryForm = signal<CountryFormModel>({
@@ -35,14 +40,14 @@ export class AdminCountries {
 
   searchTerm = signal('');
   currentPage = signal(1);
-  pageSize = signal(5);
+  pageSize = signal(DEFAULT_ADMIN_PAGE_SIZE);
 
   ngOnInit(): void {
     this.loadCountries();
   }
 
   loadCountries(): void {
-    this.countriesService.getAll(1, 50).subscribe({
+    this.countriesService.getAll(1, API_LIST_LIMIT).subscribe({
       next: (response) => {
         this.countries.set(response.data);
       },
@@ -61,25 +66,13 @@ export class AdminCountries {
     );
   });
 
-  countriesResponse = computed(() => {
-    const filtered = this.filteredCountries();
-
-    const page = this.currentPage();
-    const limit = this.pageSize();
-    const total = filtered.length;
-    const totalPages = Math.ceil(total / limit);
-
-    const start = (page - 1) * limit;
-    const end = start + limit;
-
-    return {
-      data: filtered.slice(start, end),
-      total,
-      page,
-      limit,
-      totalPages,
-    };
-  });
+  countriesResponse = computed(() =>
+    paginate(
+      this.filteredCountries(),
+      this.currentPage(),
+      this.pageSize(),
+    )
+  );
 
   onSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value;

@@ -1,13 +1,14 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Header } from '../../header/header';
-import { Footer } from '../../footer/footer';
-import { PackagePagination } from '../../home/package-pagination/package-pagination';
+import { Component, computed, inject, signal } from '@angular/core';
+import { API_LIST_LIMIT, DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
 import { CategoryPackage } from '../../../core/models/category-package';
-import {
-  CategoryPackagePayload,
-  CategoryPackages,
-} from '../../../core/services/category-packages';
+import { CategoryPackagePayload, CategoryPackages } from '../../../core/services/category-packages';
+import { paginate } from '../../../core/utils/paginate';
+import { Footer } from '../../footer/footer';
+import { Header } from '../../header/header';
+import { PackagePagination } from '../../home/package-pagination/package-pagination';
+import { AdminPageHeader } from '../admin-page-header/admin-page-header';
+import { AdminEmptyState } from '../admin-empty-state/admin-empty-state';
+import { AdminSearchInput } from '../admin-search-input/admin-search-input';
 
 type CategoryFormModel = {
   name: string;
@@ -20,8 +21,10 @@ type CategoryFormModel = {
   imports: [
     Header,
     Footer,
-    RouterLink,
     PackagePagination,
+    AdminPageHeader,
+    AdminEmptyState,
+    AdminSearchInput
   ],
   templateUrl: './admin-categories.html',
   styleUrl: './admin-categories.css',
@@ -42,14 +45,14 @@ export class AdminCategories {
 
   searchTerm = signal('');
   currentPage = signal(1);
-  pageSize = signal(5);
+  pageSize = signal(DEFAULT_ADMIN_PAGE_SIZE);
 
   ngOnInit(): void {
     this.loadCategories();
   }
 
   loadCategories(): void {
-    this.categoryPackagesService.getAll(1, 50).subscribe({
+    this.categoryPackagesService.getAll(1, API_LIST_LIMIT).subscribe({
       next: (response) => {
         this.categories.set(response.data);
       },
@@ -67,6 +70,8 @@ export class AdminCategories {
       category.description.toLowerCase().includes(term)
     );
   });
+
+
   private getErrorMessage(error: any): string {
     return (
       error?.error?.error?.message ||
@@ -74,25 +79,14 @@ export class AdminCategories {
       'Ocurrió un error inesperado'
     );
   }
-  categoriesResponse = computed(() => {
-    const filtered = this.filteredCategories();
 
-    const page = this.currentPage();
-    const limit = this.pageSize();
-    const total = filtered.length;
-    const totalPages = Math.ceil(total / limit);
-
-    const start = (page - 1) * limit;
-    const end = start + limit;
-
-    return {
-      data: filtered.slice(start, end),
-      total,
-      page,
-      limit,
-      totalPages,
-    };
-  });
+  categoriesResponse = computed(() =>
+    paginate(
+      this.filteredCategories(),
+      this.currentPage(),
+      this.pageSize(),
+    )
+  );
 
   onSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value;

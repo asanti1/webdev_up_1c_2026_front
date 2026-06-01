@@ -1,19 +1,23 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Header } from '../../header/header';
-import { Footer } from '../../footer/footer';
-import { PackagePagination } from '../../home/package-pagination/package-pagination';
-import { TravelPackage } from '../../../core/models/travel-package';
-import { Destination } from '../../../core/models/destination';
+import { Component, computed, inject, signal } from '@angular/core';
+import { API_LIST_LIMIT, DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
 import { CategoryPackage } from '../../../core/models/category-package';
+import { Destination } from '../../../core/models/destination';
+import { TravelPackage } from '../../../core/models/travel-package';
+import { CategoryPackages } from '../../../core/services/category-packages';
+import { Destinations } from '../../../core/services/destinations';
 import {
   PackageCreatePayload,
   Packages,
   PackageUpdatePayload,
 } from '../../../core/services/packages';
-import { Destinations } from '../../../core/services/destinations';
-import { CategoryPackages } from '../../../core/services/category-packages';
+import { paginate } from '../../../core/utils/paginate';
+import { Footer } from '../../footer/footer';
+import { Header } from '../../header/header';
+import { PackagePagination } from '../../home/package-pagination/package-pagination';
+import { AdminEmptyState } from '../admin-empty-state/admin-empty-state';
+import { AdminPageHeader } from '../admin-page-header/admin-page-header';
+import { AdminSearchInput } from "../admin-search-input/admin-search-input";
 
 type PackageFormModel = {
   title: string;
@@ -33,11 +37,13 @@ type PackageFormModel = {
   imports: [
     Header,
     Footer,
-    RouterLink,
     PackagePagination,
     CurrencyPipe,
     DatePipe,
-  ],
+    AdminPageHeader,
+    AdminEmptyState,
+    AdminSearchInput
+],
   templateUrl: './admin-packages.html',
   styleUrl: './admin-packages.css',
 })
@@ -68,7 +74,7 @@ export class AdminPackages {
 
   searchTerm = signal('');
   currentPage = signal(1);
-  pageSize = signal(5);
+  pageSize = signal(DEFAULT_ADMIN_PAGE_SIZE);
 
   ngOnInit(): void {
     this.loadPackages();
@@ -77,7 +83,7 @@ export class AdminPackages {
   }
 
   loadPackages(): void {
-    this.packagesService.getAll(1, 50).subscribe({
+    this.packagesService.getAll(1, API_LIST_LIMIT).subscribe({
       next: (response) => {
         this.packages.set(response.data);
       },
@@ -120,25 +126,13 @@ export class AdminPackages {
     );
   });
 
-  packagesResponse = computed(() => {
-    const filtered = this.filteredPackages();
-
-    const page = this.currentPage();
-    const limit = this.pageSize();
-    const total = filtered.length;
-    const totalPages = Math.ceil(total / limit);
-
-    const start = (page - 1) * limit;
-    const end = start + limit;
-
-    return {
-      data: filtered.slice(start, end),
-      total,
-      page,
-      limit,
-      totalPages,
-    };
-  });
+  packagesResponse = computed(() =>
+    paginate(
+      this.filteredPackages(),
+      this.currentPage(),
+      this.pageSize(),
+    )
+  );
 
   onSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
