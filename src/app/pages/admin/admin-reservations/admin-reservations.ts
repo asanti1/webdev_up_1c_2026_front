@@ -1,18 +1,19 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
-import { API_LIST_LIMIT, DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
+import { Component, inject, signal } from '@angular/core';
+
+import { DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
+import { PaginatedResponse } from '../../../core/models/paginated-response';
 import {
   Reservation,
   ReservationStatus,
 } from '../../../core/models/reservation';
 import { Reservations } from '../../../core/services/reservations';
-import { paginate } from '../../../core/utils/paginate';
+
 import { Footer } from '../../footer/footer';
 import { Header } from '../../header/header';
 import { PackagePagination } from '../../home/package-pagination/package-pagination';
 import { AdminEmptyState } from '../admin-empty-state/admin-empty-state';
 import { AdminPageHeader } from '../admin-page-header/admin-page-header';
-import { AdminSearchInput } from "../admin-search-input/admin-search-input";
 
 type ReservationStatusFilter = ReservationStatus | 'all';
 
@@ -27,84 +28,64 @@ type ReservationStatusFilter = ReservationStatus | 'all';
     DatePipe,
     AdminPageHeader,
     AdminEmptyState,
-    AdminSearchInput
-],
+  ],
   templateUrl: './admin-reservations.html',
 })
 export class AdminReservations {
   private reservationsService = inject(Reservations);
 
-  reservations = signal<Reservation[]>([]);
+  reservationsResponse = signal<PaginatedResponse<Reservation>>({
+    data: [],
+    total: 0,
+    page: 1,
+    limit: DEFAULT_ADMIN_PAGE_SIZE,
+    totalPages: 0,
+  });
 
-  searchTerm = signal('');
   statusFilter = signal<ReservationStatusFilter>('all');
-
   currentPage = signal(1);
-  pageSize = signal(DEFAULT_ADMIN_PAGE_SIZE);
 
   ngOnInit(): void {
     this.loadReservations();
   }
 
-  loadReservations(): void {
-    const status = this.statusFilter() === 'all'
-      ? undefined
-      : this.statusFilter() as ReservationStatus;
+  loadReservations(page = 1): void {
+    const status =
+      this.statusFilter() === 'all'
+        ? undefined
+        : this.statusFilter() as ReservationStatus;
 
-    this.reservationsService.getAll(1, API_LIST_LIMIT, status).subscribe({
-      next: (response) => {
-        this.reservations.set(response.data);
-      },
-      error: (error) => {
-        console.error(error);
-      },
-    });
-  }
-
-  filteredReservations = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-
-    return this.reservations().filter(reservation =>
-      reservation.package.title.toLowerCase().includes(term) ||
-      reservation.destination.name.toLowerCase().includes(term) ||
-      reservation.user.firstName.toLowerCase().includes(term) ||
-      reservation.user.lastName.toLowerCase().includes(term) ||
-      reservation.user.email.toLowerCase().includes(term) ||
-      reservation.status.toLowerCase().includes(term)
-    );
-  });
-
-  reservationsResponse = computed(() =>
-    paginate(
-      this.filteredReservations(),
-      this.currentPage(),
-      this.pageSize(),
-    )
-  );
-
-  onSearch(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-
-    this.searchTerm.set(value);
-    this.currentPage.set(1);
+    this.reservationsService
+      .getAll(page, DEFAULT_ADMIN_PAGE_SIZE, status)
+      .subscribe({
+        next: (response) => {
+          this.reservationsResponse.set(response);
+          this.currentPage.set(response.page);
+        },
+        error: (error) => {
+          console.error(error);
+        },
+      });
   }
 
   onStatusChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value as ReservationStatusFilter;
+    const value = (
+      event.target as HTMLSelectElement
+    ).value as ReservationStatusFilter;
 
     this.statusFilter.set(value);
     this.currentPage.set(1);
-    this.loadReservations();
+    this.loadReservations(1);
   }
 
   goToPage(page: number): void {
-    this.currentPage.set(page);
+    this.loadReservations(page);
   }
 
   updateStatus(reservation: Reservation, status: ReservationStatus): void {
     this.reservationsService.updateStatus(reservation.id, status).subscribe({
       next: () => {
-        this.loadReservations();
+        this.loadReservations(this.currentPage());
       },
       error: (error) => {
         console.error(error);
@@ -113,15 +94,9 @@ export class AdminReservations {
   }
 
   deleteReservation(reservation: Reservation): void {
-    const confirmed = confirm(`¿Seguro que querés cancelar la reserva de ${reservation.user.firstName} ${reservation.user.lastName}?`);
-
-    if (!confirmed) {
-      return;
-    }
-
     this.reservationsService.delete(reservation.id).subscribe({
       next: () => {
-        this.loadReservations();
+        this.loadReservations(this.currentPage());
       },
       error: (error) => {
         console.error(error);

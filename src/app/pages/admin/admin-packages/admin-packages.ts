@@ -1,8 +1,13 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { API_LIST_LIMIT, DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
+
+import {
+  API_LIST_LIMIT,
+  DEFAULT_ADMIN_PAGE_SIZE,
+} from '../../../core/constants/pagination';
 import { CategoryPackage } from '../../../core/models/category-package';
 import { Destination } from '../../../core/models/destination';
+import { PaginatedResponse } from '../../../core/models/paginated-response';
 import { TravelPackage } from '../../../core/models/travel-package';
 import { CategoryPackages } from '../../../core/services/category-packages';
 import { Destinations } from '../../../core/services/destinations';
@@ -11,13 +16,12 @@ import {
   Packages,
   PackageUpdatePayload,
 } from '../../../core/services/packages';
-import { paginate } from '../../../core/utils/paginate';
+
 import { Footer } from '../../footer/footer';
 import { Header } from '../../header/header';
 import { PackagePagination } from '../../home/package-pagination/package-pagination';
 import { AdminEmptyState } from '../admin-empty-state/admin-empty-state';
 import { AdminPageHeader } from '../admin-page-header/admin-page-header';
-import { AdminSearchInput } from "../admin-search-input/admin-search-input";
 
 type PackageFormModel = {
   title: string;
@@ -42,8 +46,7 @@ type PackageFormModel = {
     DatePipe,
     AdminPageHeader,
     AdminEmptyState,
-    AdminSearchInput
-],
+  ],
   templateUrl: './admin-packages.html',
 })
 export class AdminPackages {
@@ -51,7 +54,6 @@ export class AdminPackages {
   private destinationsService = inject(Destinations);
   private categoryPackagesService = inject(CategoryPackages);
 
-  packages = signal<TravelPackage[]>([]);
   destinationOptions = signal<Destination[]>([]);
   categoryOptions = signal<CategoryPackage[]>([]);
 
@@ -69,11 +71,17 @@ export class AdminPackages {
     destinationId: '',
   });
 
-  isEditing = computed(() => this.editingPackage() !== null);
+  packagesResponse = signal<PaginatedResponse<TravelPackage>>({
+    data: [],
+    total: 0,
+    page: 1,
+    limit: DEFAULT_ADMIN_PAGE_SIZE,
+    totalPages: 0,
+  });
 
-  searchTerm = signal('');
   currentPage = signal(1);
-  pageSize = signal(DEFAULT_ADMIN_PAGE_SIZE);
+
+  isEditing = computed(() => this.editingPackage() !== null);
 
   ngOnInit(): void {
     this.loadPackages();
@@ -81,10 +89,11 @@ export class AdminPackages {
     this.loadCategories();
   }
 
-  loadPackages(): void {
-    this.packagesService.getAll(1, API_LIST_LIMIT).subscribe({
+  loadPackages(page = 1): void {
+    this.packagesService.getAll(page, DEFAULT_ADMIN_PAGE_SIZE).subscribe({
       next: (response) => {
-        this.packages.set(response.data);
+        this.packagesResponse.set(response);
+        this.currentPage.set(response.page);
       },
       error: (error) => {
         console.error(error);
@@ -93,7 +102,7 @@ export class AdminPackages {
   }
 
   loadDestinations(): void {
-    this.destinationsService.getAll(1, 50).subscribe({
+    this.destinationsService.getAll(1, API_LIST_LIMIT).subscribe({
       next: (response) => {
         this.destinationOptions.set(response.data);
       },
@@ -104,7 +113,7 @@ export class AdminPackages {
   }
 
   loadCategories(): void {
-    this.categoryPackagesService.getAll(1, 50).subscribe({
+    this.categoryPackagesService.getAll(1, API_LIST_LIMIT).subscribe({
       next: (response) => {
         this.categoryOptions.set(response.data);
       },
@@ -114,34 +123,8 @@ export class AdminPackages {
     });
   }
 
-  filteredPackages = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-
-    return this.packages().filter(pack =>
-      pack.title.toLowerCase().includes(term) ||
-      pack.description.toLowerCase().includes(term) ||
-      pack.destination.name.toLowerCase().includes(term) ||
-      pack.categoryPackage.name.toLowerCase().includes(term)
-    );
-  });
-
-  packagesResponse = computed(() =>
-    paginate(
-      this.filteredPackages(),
-      this.currentPage(),
-      this.pageSize(),
-    )
-  );
-
-  onSearch(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-
-    this.searchTerm.set(value);
-    this.currentPage.set(1);
-  }
-
   goToPage(page: number): void {
-    this.currentPage.set(page);
+    this.loadPackages(page);
   }
 
   openCreateModal(): void {
@@ -177,7 +160,9 @@ export class AdminPackages {
   }
 
   updateFormField(field: keyof PackageFormModel, event: Event): void {
-    const value = (event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value;
+    const value = (
+      event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    ).value;
 
     this.packageForm.update(current => ({
       ...current,
@@ -215,7 +200,7 @@ export class AdminPackages {
 
       this.packagesService.update(editing.id, payload).subscribe({
         next: () => {
-          this.loadPackages();
+          this.loadPackages(this.currentPage());
         },
         error: (error) => {
           console.error(error);
@@ -240,7 +225,7 @@ export class AdminPackages {
     this.packagesService.create(payload).subscribe({
       next: () => {
         this.currentPage.set(1);
-        this.loadPackages();
+        this.loadPackages(1);
 
         this.packageForm.set({
           title: '',
@@ -265,7 +250,7 @@ export class AdminPackages {
       isActive: !pack.isActive,
     }).subscribe({
       next: () => {
-        this.loadPackages();
+        this.loadPackages(this.currentPage());
       },
       error: (error) => {
         console.error(error);
@@ -282,7 +267,7 @@ export class AdminPackages {
 
     this.packagesService.delete(pack.id).subscribe({
       next: () => {
-        this.loadPackages();
+        this.loadPackages(this.currentPage());
       },
       error: (error) => {
         console.error(error);

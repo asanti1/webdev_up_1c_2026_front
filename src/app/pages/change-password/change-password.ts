@@ -1,8 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { form, FormField, required, validate } from '@angular/forms/signals';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Header } from '../header/header';
 import { Footer } from '../footer/footer';
+import { Users } from '../../core/services/users';
+import { AuthState } from '../../core/auth/auth-state';
 
 interface ChangePasswordData {
   currentPassword: string;
@@ -22,9 +24,14 @@ interface ChangePasswordData {
   templateUrl: './change-password.html',
   styleUrl: './change-password.css',
 })
-
 export class ChangePassword {
+  private usersService = inject(Users);
+  private authState = inject(AuthState);
+  private router = inject(Router);
+
   successMessage = signal<string | null>(null);
+  errorMessage = signal<string | null>(null);
+  isLoading = signal(false);
 
   model = signal<ChangePasswordData>({
     currentPassword: '',
@@ -38,7 +45,6 @@ export class ChangePassword {
     required(path.confirmPassword, { message: 'La confirmación es requerida' });
 
     validate(path.confirmPassword, ({ value, valueOf }) => {
-
       if (value() !== valueOf(path.newPassword)) {
         return {
           kind: 'passwordMismatch',
@@ -50,16 +56,54 @@ export class ChangePassword {
     });
   });
 
-
   onSubmit(event: Event): void {
     event.preventDefault();
 
+    this.successMessage.set(null);
+    this.errorMessage.set(null);
+
     if (this.passwordForm().invalid()) {
+      this.errorMessage.set('Completá correctamente todos los campos.');
       return;
     }
 
-    this.successMessage.set('Contraseña actualizada correctamente (mock)');
+    const user = this.authState.user();
+
+    if (!user) {
+      this.errorMessage.set('No hay una sesión activa.');
+      return;
+    }
+
+    const formValue = this.model();
+
+    this.isLoading.set(true);
+
+    this.usersService.update(user.id, {
+      password: formValue.newPassword,
+    }).subscribe({
+      next: () => {
+        this.successMessage.set('Contraseña actualizada correctamente.');
+
+        setTimeout(() => {
+          this.router.navigateByUrl('/profile');
+        }, 1000);
+      },
+      error: (error) => {
+        console.error(error);
+
+        this.errorMessage.set(
+          error?.error?.error?.message ||
+          error?.error?.message ||
+          'No se pudo actualizar la contraseña.'
+        );
+      },
+      complete: () => {
+        this.isLoading.set(false);
+      },
+    });
   }
 
-
+  cancel(): void {
+    this.router.navigateByUrl('/profile');
+  }
 }

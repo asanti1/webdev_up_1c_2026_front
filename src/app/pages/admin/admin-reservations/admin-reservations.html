@@ -8,10 +8,6 @@
     <div class="card-body p-4">
 
       <div class="row g-3 mb-4">
-        <div class="col-12 col-md-6 col-lg-4">
-          <app-admin-search-input placeholder="Buscar reservas..." (searchChange)="onSearch($event)" />
-        </div>
-
         <div class="col-12 col-md-6 col-lg-3">
           <select class="form-select" [value]="statusFilter()" (change)="onStatusChange($event)">
             <option value="all">Todos los estados</option>
@@ -23,12 +19,9 @@
       </div>
 
       @if (reservationsResponse().data.length === 0) {
-
-      <app-admin-empty-state title="No se encontraron reservas"
-        description="Probá con otra búsqueda o creá un nuevo país." />
-
+      <app-admin-empty-state title="No se encontraron paises"
+        description="Creá un nuevo país para empezar." />
       } @else {
-
       <div class="table-responsive">
         <table class="table align-middle">
           <thead>
@@ -92,7 +85,7 @@
                     <i class="bi bi-clock"></i>
                   </button>
 
-                  <button type="button" class="btn btn-outline-danger" [disabled]="reservation.status === 'cancelled'"
+                  <button type="button" class="btn btn-outline-danger"
                     (click)="deleteReservation(reservation)">
                     <i class="bi bi-x-lg"></i>
                   </button>

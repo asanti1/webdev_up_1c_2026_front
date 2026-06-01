@@ -32,7 +32,7 @@ export class Home {
   searchTerm = signal('');
   selectedCategory = signal('Todas');
   currentPage = signal(1);
-  pageSize = signal(3);
+  pageSize = signal(6);
   packages = signal<TravelPackage[]>([]);
   loading = signal(false);
   error = signal<string | null>(null);

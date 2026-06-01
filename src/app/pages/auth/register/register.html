@@ -88,6 +88,13 @@
               <input type="text" [formField]="registerForm.cellphoneNumber" class="form-control"
                 placeholder="2216000000" />
             </div>
+            @if (registerForm.cellphoneNumber().touched() && registerForm.cellphoneNumber().invalid()) {
+            <ul class="text-danger small mt-1 mb-0 ps-0 list-unstyled">
+              @for (err of registerForm.cellphoneNumber().errors(); track err) {
+              <li>{{ err.message }}</li>
+              }
+            </ul>
+            }
 
             <div class="mb-3">
               <label class="form-label">
@@ -129,7 +136,13 @@
                 }
               </select>
             </div>
-
+            @if (registerForm.countryId().touched() && registerForm.countryId().invalid()) {
+            <ul class="text-danger small mt-1 mb-0 ps-0 list-unstyled">
+              @for (err of registerForm.countryId().errors(); track err) {
+              <li>{{ err.message }}</li>
+              }
+            </ul>
+            }
             @if (isLoadingCountries()) {
             <p class="small text-muted">
               Cargando países...

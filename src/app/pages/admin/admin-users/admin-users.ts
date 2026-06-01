@@ -1,25 +1,24 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Header } from '../../header/header';
-import { Footer } from '../../footer/footer';
-import { PackagePagination } from '../../home/package-pagination/package-pagination';
+import { Component, computed, inject, signal } from '@angular/core';
 
+import {
+  API_LIST_LIMIT,
+  DEFAULT_ADMIN_PAGE_SIZE,
+} from '../../../core/constants/pagination';
 import { Country } from '../../../core/models/country';
+import { PaginatedResponse } from '../../../core/models/paginated-response';
 import { User, UserRoleName } from '../../../core/models/user';
-
 import { Countries } from '../../../core/services/countries';
 import {
   UserCreatePayload,
-  UserUpdatePayload,
   Users,
+  UserUpdatePayload,
 } from '../../../core/services/users';
-import { paginate } from '../../../core/utils/paginate';
-import { API_LIST_LIMIT, DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
+
+import { Footer } from '../../footer/footer';
+import { Header } from '../../header/header';
+import { PackagePagination } from '../../home/package-pagination/package-pagination';
 import { AdminEmptyState } from '../admin-empty-state/admin-empty-state';
 import { AdminPageHeader } from '../admin-page-header/admin-page-header';
-import { AdminSearchInput } from "../admin-search-input/admin-search-input";
-
-type RoleFilter = UserRoleName | 'all';
 
 type UserFormModel = {
   firstName: string;
@@ -41,15 +40,13 @@ type UserFormModel = {
     PackagePagination,
     AdminPageHeader,
     AdminEmptyState,
-    AdminSearchInput
-],
+  ],
   templateUrl: './admin-users.html',
 })
 export class AdminUsers {
   private usersService = inject(Users);
   private countriesService = inject(Countries);
 
-  users = signal<User[]>([]);
   countryOptions = signal<Country[]>([]);
 
   roleOptions = [
@@ -70,82 +67,48 @@ export class AdminUsers {
     password: '',
   });
 
-  isEditing = computed(() => this.editingUser() !== null);
-
-  searchTerm = signal('');
-  roleFilter = signal<RoleFilter>('all');
+  usersResponse = signal<PaginatedResponse<User>>({
+    data: [],
+    total: 0,
+    page: 1,
+    limit: DEFAULT_ADMIN_PAGE_SIZE,
+    totalPages: 0,
+  });
 
   currentPage = signal(1);
-  pageSize = signal(DEFAULT_ADMIN_PAGE_SIZE);
+
+  isEditing = computed(() => this.editingUser() !== null);
 
   ngOnInit(): void {
     this.loadUsers();
     this.loadCountries();
   }
 
-  loadUsers(): void {
-    this.usersService.getAll(1, API_LIST_LIMIT).subscribe({
+  loadUsers(page = 1): void {
+    this.usersService.getAll(page, DEFAULT_ADMIN_PAGE_SIZE).subscribe({
       next: (response) => {
-        this.users.set(response.data);
+        this.usersResponse.set(response);
+        this.currentPage.set(response.page);
       },
-      error: console.error,
+      error: (error) => {
+        console.error(error);
+      },
     });
   }
 
   loadCountries(): void {
-    this.countriesService.getAll(1, 50).subscribe({
+    this.countriesService.getAll(1, API_LIST_LIMIT).subscribe({
       next: (response) => {
         this.countryOptions.set(response.data);
       },
-      error: console.error,
+      error: (error) => {
+        console.error(error);
+      },
     });
-  }
-
-  filteredUsers = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-    const role = this.roleFilter();
-
-    return this.users().filter(user => {
-      const matchesSearch =
-        user.firstName.toLowerCase().includes(term) ||
-        user.lastName.toLowerCase().includes(term) ||
-        user.email.toLowerCase().includes(term) ||
-        user.country.name.toLowerCase().includes(term);
-
-      const matchesRole =
-        role === 'all' ||
-        user.role.name === role;
-
-      return matchesSearch && matchesRole;
-    });
-  });
-
-  usersResponse = computed(() =>
-    paginate(
-      this.filteredUsers(),
-      this.currentPage(),
-      this.pageSize(),
-    )
-  );
-
-  onSearch(event: Event): void {
-    this.searchTerm.set(
-      (event.target as HTMLInputElement).value
-    );
-
-    this.currentPage.set(1);
-  }
-
-  onRoleChange(event: Event): void {
-    this.roleFilter.set(
-      (event.target as HTMLSelectElement).value as RoleFilter
-    );
-
-    this.currentPage.set(1);
   }
 
   goToPage(page: number): void {
-    this.currentPage.set(page);
+    this.loadUsers(page);
   }
 
   openCreateModal(): void {
@@ -186,7 +149,7 @@ export class AdminUsers {
       ...current,
       [field]:
         field === 'age'
-          ? (value === '' ? null : Number(value))
+          ? value === '' ? null : Number(value)
           : value,
     }));
   }
@@ -218,8 +181,12 @@ export class AdminUsers {
       };
 
       this.usersService.update(editing.id, payload).subscribe({
-        next: () => this.loadUsers(),
-        error: console.error,
+        next: () => {
+          this.loadUsers(this.currentPage());
+        },
+        error: (error) => {
+          console.error(error);
+        },
       });
 
       return;
@@ -241,10 +208,23 @@ export class AdminUsers {
 
     this.usersService.create(payload).subscribe({
       next: () => {
-        this.loadUsers();
         this.currentPage.set(1);
+        this.loadUsers(1);
+
+        this.userForm.set({
+          firstName: '',
+          lastName: '',
+          email: '',
+          cellphoneNumber: '',
+          age: null,
+          countryId: '',
+          role: 'USER',
+          password: '',
+        });
       },
-      error: console.error,
+      error: (error) => {
+        console.error(error);
+      },
     });
   }
 
@@ -256,8 +236,12 @@ export class AdminUsers {
     if (!confirmed) return;
 
     this.usersService.delete(user.id).subscribe({
-      next: () => this.loadUsers(),
-      error: console.error,
+      next: () => {
+        this.loadUsers(this.currentPage());
+      },
+      error: (error) => {
+        console.error(error);
+      },
     });
   }
 

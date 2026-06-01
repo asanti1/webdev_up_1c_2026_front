@@ -1,20 +1,15 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Header } from '../../header/header';
-import { Footer } from '../../footer/footer';
-import { PackagePagination } from '../../home/package-pagination/package-pagination';
-import { Destination } from '../../../core/models/destination';
-import { Country } from '../../../core/models/country';
-import {
-  DestinationPayload,
-  Destinations,
-} from '../../../core/services/destinations';
-import { Countries } from '../../../core/services/countries';
-import { paginate } from '../../../core/utils/paginate';
+import { Component, computed, inject, signal } from '@angular/core';
 import { API_LIST_LIMIT, DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
-import { AdminPageHeader } from '../admin-page-header/admin-page-header';
+import { Country } from '../../../core/models/country';
+import { Destination } from '../../../core/models/destination';
+import { PaginatedResponse } from '../../../core/models/paginated-response';
+import { Countries } from '../../../core/services/countries';
+import { DestinationPayload, Destinations } from '../../../core/services/destinations';
+import { Footer } from '../../footer/footer';
+import { Header } from '../../header/header';
+import { PackagePagination } from '../../home/package-pagination/package-pagination';
 import { AdminEmptyState } from '../admin-empty-state/admin-empty-state';
-import { AdminSearchInput } from "../admin-search-input/admin-search-input";
+import { AdminPageHeader } from '../admin-page-header/admin-page-header';
 
 type DestinationFormModel = {
   name: string;
@@ -31,17 +26,14 @@ type DestinationFormModel = {
     PackagePagination,
     AdminPageHeader,
     AdminEmptyState,
-    AdminSearchInput
-],
+  ],
   templateUrl: './admin-destinations.html',
 })
 export class AdminDestinations {
   private destinationsService = inject(Destinations);
   private countriesService = inject(Countries);
 
-  destinations = signal<Destination[]>([]);
   countryOptions = signal<Country[]>([]);
-
   editingDestination = signal<Destination | null>(null);
 
   destinationForm = signal<DestinationFormModel>({
@@ -50,21 +42,27 @@ export class AdminDestinations {
     countryId: '',
   });
 
-  isEditing = computed(() => this.editingDestination() !== null);
+  destinationsResponse = signal<PaginatedResponse<Destination>>({
+    data: [],
+    total: 0,
+    page: 1,
+    limit: DEFAULT_ADMIN_PAGE_SIZE,
+    totalPages: 0,
+  });
 
-  searchTerm = signal('');
+  isEditing = computed(() => this.editingDestination() !== null);
   currentPage = signal(1);
-  pageSize = signal(DEFAULT_ADMIN_PAGE_SIZE);
 
   ngOnInit(): void {
     this.loadDestinations();
     this.loadCountries();
   }
 
-  loadDestinations(): void {
-    this.destinationsService.getAll(1, API_LIST_LIMIT).subscribe({
+  loadDestinations(page = 1): void {
+    this.destinationsService.getAll(page, DEFAULT_ADMIN_PAGE_SIZE).subscribe({
       next: (response) => {
-        this.destinations.set(response.data);
+        this.destinationsResponse.set(response);
+        this.currentPage.set(response.page);
       },
       error: (error) => {
         console.error(error);
@@ -83,33 +81,8 @@ export class AdminDestinations {
     });
   }
 
-  filteredDestinations = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-
-    return this.destinations().filter(destination =>
-      destination.name.toLowerCase().includes(term) ||
-      destination.description.toLowerCase().includes(term) ||
-      destination.country.name.toLowerCase().includes(term)
-    );
-  });
-
-  destinationsResponse = computed(() =>
-    paginate(
-      this.filteredDestinations(),
-      this.currentPage(),
-      this.pageSize(),
-    )
-  );
-
-  onSearch(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-
-    this.searchTerm.set(value);
-    this.currentPage.set(1);
-  }
-
   goToPage(page: number): void {
-    this.currentPage.set(page);
+    this.loadDestinations(page);
   }
 
   openCreateModal(): void {
@@ -133,7 +106,9 @@ export class AdminDestinations {
   }
 
   updateFormField(field: keyof DestinationFormModel, event: Event): void {
-    const value = (event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value;
+    const value = (
+      event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    ).value;
 
     this.destinationForm.update(current => ({
       ...current,
@@ -150,16 +125,20 @@ export class AdminDestinations {
       countryId: form.countryId,
     };
 
-    if (!payload.name || !payload.description || !payload.countryId) return;
+    if (!payload.name || !payload.description || !payload.countryId) {
+      return;
+    }
 
     const editing = this.editingDestination();
 
     if (editing) {
       this.destinationsService.update(editing.id, payload).subscribe({
         next: () => {
-          this.loadDestinations();
+          this.loadDestinations(this.currentPage());
         },
-        error: (error) => { console.error(error) },
+        error: (error) => {
+          console.error(error);
+        },
       });
 
       return;
@@ -168,7 +147,7 @@ export class AdminDestinations {
     this.destinationsService.create(payload).subscribe({
       next: () => {
         this.currentPage.set(1);
-        this.loadDestinations();
+        this.loadDestinations(1);
 
         this.destinationForm.set({
           name: '',
@@ -176,18 +155,22 @@ export class AdminDestinations {
           countryId: '',
         });
       },
-      error: (error) => { console.error(error) },
+      error: (error) => {
+        console.error(error);
+      },
     });
   }
 
   deleteDestination(destination: Destination): void {
-    const confirmed = confirm(`¿Seguro que querés eliminar el destino ${destination.name}?`);
+    const confirmed = confirm(
+      `¿Seguro que querés eliminar el destino ${destination.name}?`
+    );
 
     if (!confirmed) return;
 
     this.destinationsService.delete(destination.id).subscribe({
       next: () => {
-        this.loadDestinations();
+        this.loadDestinations(this.currentPage());
       },
       error: (error) => {
         console.error(error);

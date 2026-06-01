@@ -71,50 +71,77 @@ export class Register {
     this.location.back();
   }
 
-  onSubmit(event: Event) {
+  onSubmit(event: Event): void {
     event.preventDefault();
-    this.authService.register(this.registerModel()).subscribe({
-      next: (user) => {
-        console.log(user)
-        this.authService.login({ email: this.registerModel().email, password: this.registerModel().password }).subscribe({
+
+    this.errorMessage.set(null);
+
+    if (this.registerForm().invalid()) {
+      this.errorMessage.set('Completá correctamente todos los campos requeridos.');
+      return;
+    }
+
+    const form = this.registerModel();
+
+    this.authService.register(form).subscribe({
+      next: () => {
+        this.authService.login({
+          email: form.email,
+          password: form.password,
+        }).subscribe({
           next: (token) => {
             this.authState.setToken(token);
             this.authState.setUserFromToken(token);
             this.router.navigateByUrl('/');
           },
-          error: (err) => {
-            if (err.status === 409) {
-              this.errorMessage.set('Ya existe una cuenta con ese email');
-            }
-          }
-        })
+          error: () => {
+            this.errorMessage.set(
+              'La cuenta fue creada, pero no se pudo iniciar sesión automáticamente.'
+            );
+          },
+        });
       },
       error: (err) => {
-        console.error(err);
-      }
-    })
+        if (err.status === 409) {
+          this.errorMessage.set('Ya existe una cuenta con ese email.');
+          return;
+        }
+
+        this.errorMessage.set('No se pudo crear la cuenta. Revisá los datos ingresados.');
+      },
+    });
   }
 
   registerForm = form(this.registerModel, (schemaPath) => {
+    required(schemaPath.firstName, { message: 'El nombre es requerido' });
+    required(schemaPath.lastName, { message: 'El apellido es requerido' });
+
+    required(schemaPath.age, { message: 'La edad es requerida' });
+    min(schemaPath.age, 10, { message: 'La edad debe ser mayor a 10' });
+
     required(schemaPath.email, { message: 'El email es requerido' });
-    email(schemaPath.email, { message: 'Ingresa un email valido, ejemplo: ejemplo@ejemplo.com' });
+    email(schemaPath.email, { message: 'Ingresá un email válido, ejemplo: ejemplo@ejemplo.com' });
+
+    required(schemaPath.cellphoneNumber, { message: 'El número de teléfono es requerido' });
+
+    required(schemaPath.countryId, { message: 'El país es requerido' });
+
     required(schemaPath.password, { message: 'La contraseña es requerida' });
     required(schemaPath.confirmPassword, { message: 'Requerido' });
-    required(schemaPath.cellphoneNumber, { message: 'El numero de telefono es requerido' });
-    min(schemaPath.age, 10, { message: `La edad debe ser mayor a 10` });
+
     validate(schemaPath.confirmPassword, ({ value, valueOf }) => {
       const confirmPassword = value();
       const password = valueOf(schemaPath.password);
-      if (confirmPassword !== password) return {
-        kind: 'passwordMismatch',
-        message: 'Las contraseñas no coinciden'
+
+      if (confirmPassword !== password) {
+        return {
+          kind: 'passwordMismatch',
+          message: 'Las contraseñas no coinciden',
+        };
       }
 
       return null;
-
-    })
-
-
+    });
   });
 
 }

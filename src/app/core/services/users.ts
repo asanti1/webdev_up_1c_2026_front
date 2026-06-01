@@ -23,6 +23,7 @@ export type UserUpdatePayload = {
   email?: string;
   cellphoneNumber?: string;
   countryId?: string;
+  password?: string;
 };
 
 @Injectable({

@@ -2,21 +2,15 @@
 
 <main class="container py-4 py-lg-5">
 
-  <app-admin-page-header title="Países" description="Gestioná los países disponibles para usuarios y destinos."
-    buttonLabel="Nueva categoria" modalTarget="#countryModal" (createClicked)="openCreateModal()" />
+  <app-admin-page-header title="Categorias" description="Gestioná las categorias disponibles."
+    buttonLabel="Nueva categoria" modalTarget="#categoryModal" (createClicked)="openCreateModal()" />
 
   <section class="card border-0 shadow-sm rounded-4">
     <div class="card-body p-4">
 
-      <div class="row g-3 mb-4">
-        <div class="col-12 col-md-6 col-lg-4">
-          <app-admin-search-input placeholder="Buscar Categoria..." (searchChange)="onSearch($event)" />
-        </div>
-      </div>
-
       @if (categoriesResponse().data.length === 0) {
       <app-admin-empty-state title="No se encontraron categorias"
-        description="Probá con otra búsqueda o creá un nuevo país." />
+        description="Creá una nueva categoría para comenzar." />
       } @else {
       @if (successMessage()) {
       <div class="alert alert-success">
@@ -70,7 +64,6 @@
 
       <app-package-pagination [currentPage]="categoriesResponse().page" [totalPages]="categoriesResponse().totalPages"
         (pageChange)="goToPage($event)" />
-
       }
 
     </div>

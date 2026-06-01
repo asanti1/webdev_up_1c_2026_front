@@ -1,14 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { API_LIST_LIMIT, DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
+import { Component, inject, signal } from '@angular/core';
+import { DEFAULT_ADMIN_PAGE_SIZE } from '../../../core/constants/pagination';
 import { Country } from '../../../core/models/country';
+import { PaginatedResponse } from '../../../core/models/paginated-response';
 import { Countries } from '../../../core/services/countries';
-import { paginate } from '../../../core/utils/paginate';
 import { Footer } from '../../footer/footer';
 import { Header } from '../../header/header';
 import { PackagePagination } from '../../home/package-pagination/package-pagination';
-import { AdminPageHeader } from '../admin-page-header/admin-page-header';
 import { AdminEmptyState } from '../admin-empty-state/admin-empty-state';
-import { AdminSearchInput } from '../admin-search-input/admin-search-input';
+import { AdminPageHeader } from '../admin-page-header/admin-page-header';
 
 type CountryFormModel = {
   name: string;
@@ -24,31 +23,36 @@ type CountryFormModel = {
     PackagePagination,
     AdminPageHeader,
     AdminEmptyState,
-    AdminSearchInput
   ],
   templateUrl: './admin-countries.html',
 })
 export class AdminCountries {
   private countriesService = inject(Countries);
-  countries = signal<Country[]>([]);
 
   countryForm = signal<CountryFormModel>({
     name: '',
     isoCode: '',
   });
 
-  searchTerm = signal('');
+  countriesResponse = signal<PaginatedResponse<Country>>({
+    data: [],
+    total: 0,
+    page: 1,
+    limit: DEFAULT_ADMIN_PAGE_SIZE,
+    totalPages: 0,
+  });
+
   currentPage = signal(1);
-  pageSize = signal(DEFAULT_ADMIN_PAGE_SIZE);
 
   ngOnInit(): void {
     this.loadCountries();
   }
 
-  loadCountries(): void {
-    this.countriesService.getAll(1, API_LIST_LIMIT).subscribe({
+  loadCountries(page = 1): void {
+    this.countriesService.getAll(page, DEFAULT_ADMIN_PAGE_SIZE).subscribe({
       next: (response) => {
-        this.countries.set(response.data);
+        this.countriesResponse.set(response);
+        this.currentPage.set(response.page);
       },
       error: (error) => {
         console.error(error);
@@ -56,32 +60,8 @@ export class AdminCountries {
     });
   }
 
-  filteredCountries = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-
-    return this.countries().filter(country =>
-      country.name.toLowerCase().includes(term) ||
-      country.isoCode.toLowerCase().includes(term)
-    );
-  });
-
-  countriesResponse = computed(() =>
-    paginate(
-      this.filteredCountries(),
-      this.currentPage(),
-      this.pageSize(),
-    )
-  );
-
-  onSearch(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-
-    this.searchTerm.set(value);
-    this.currentPage.set(1);
-  }
-
   goToPage(page: number): void {
-    this.currentPage.set(page);
+    this.loadCountries(page);
   }
 
   openCreateModal(): void {
@@ -115,7 +95,7 @@ export class AdminCountries {
     this.countriesService.create(payload).subscribe({
       next: () => {
         this.currentPage.set(1);
-        this.loadCountries();
+        this.loadCountries(1);
 
         this.countryForm.set({
           name: '',

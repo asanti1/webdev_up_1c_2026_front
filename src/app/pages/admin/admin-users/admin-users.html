@@ -2,25 +2,11 @@
 
 <main class="container py-4 py-lg-5">
 
-  <app-admin-page-header title="Países" description="Gestioná los países disponibles para usuarios y destinos."
-    buttonLabel="Nuevo Usuario" modalTarget="#countryModal" (createClicked)="openCreateModal()" />
+  <app-admin-page-header title="Usuarios" description="Gestioná los usuarios."
+    buttonLabel="Nuevo Usuario" modalTarget="#userModal" (createClicked)="openCreateModal()" />
 
   <section class="card border-0 shadow-sm rounded-4">
     <div class="card-body p-4">
-
-      <div class="row g-3 mb-4">
-        <div class="col-12 col-md-6 col-lg-4">
-          <app-admin-search-input placeholder="Buscar usuarios..." (searchChange)="onSearch($event)" />
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-3">
-          <select class="form-select" [value]="roleFilter()" (change)="onRoleChange($event)">
-            <option value="all">Todos los roles</option>
-            <option value="USER">Usuarios</option>
-            <option value="ADMIN">Administradores</option>
-          </select>
-        </div>
-      </div>
 
       @if (usersResponse().data.length === 0) {
       <app-admin-empty-state title="No se encontraron usuarios"
