@@ -6,6 +6,7 @@ export interface CartPackage {
   destination: string;
   price: number;
   imageUrl: string;
+  availableSlots: number;
 }
 
 export interface CartItem {

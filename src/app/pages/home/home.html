@@ -18,15 +18,15 @@
     </aside>
 
     <section class="col-12 col-lg-9">
-      <div class="row g-4">
-        @for (pack of packagesResponse().data; track pack.id) {
-        <div class="col-12 col-md-6 col-xl-4">
-          <app-package-card [pack]="pack" />
-        </div>
-        }
+
+      @if (loading()) {
+
+      <div class="alert alert-light border text-center py-5">
+        Cargando paquetes...
       </div>
 
-      @if (packagesResponse().data.length === 0) {
+      } @else if (packagesResponse().data.length === 0) {
+
       <div class="alert alert-light border text-center py-5">
         <h2 class="h5 fw-bold mb-2">
           No encontramos paquetes
@@ -36,7 +36,9 @@
           Probá con otra búsqueda o cambiá la categoría seleccionada.
         </p>
       </div>
+
       } @else {
+
       <div class="row g-4">
         @for (pack of packagesResponse().data; track pack.id) {
         <div class="col-12 col-md-6 col-xl-4">
@@ -49,6 +51,7 @@
         (pageChange)="goToPage($event)" />
 
       }
+
     </section>
 
   </div>

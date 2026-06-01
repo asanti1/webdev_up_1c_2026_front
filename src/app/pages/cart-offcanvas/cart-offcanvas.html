@@ -1,130 +1,141 @@
-<div
-  class="offcanvas offcanvas-end"
-  tabindex="-1"
-  id="cartOffcanvas"
-  aria-labelledby="cartOffcanvasLabel"
->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="cartOffcanvas" aria-labelledby="cartOffcanvasLabel">
   <div class="offcanvas-header border-bottom">
     <h2 class="offcanvas-title h5 fw-bold" id="cartOffcanvasLabel">
       Tu carrito
     </h2>
 
-    <button
-      type="button"
-      class="btn-close"
-      data-bs-dismiss="offcanvas"
-      aria-label="Cerrar"
-    ></button>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
   </div>
 
   <div class="offcanvas-body">
 
+    @if (reservationCreated()) {
+
+    <div class="alert alert-success rounded-4 mb-4">
+      <h3 class="h5 fw-bold mb-3">
+        ¡Reserva registrada correctamente!
+      </h3>
+
+      <p class="mb-3">
+        Para completar el proceso, realizá la transferencia con los siguientes datos:
+      </p>
+
+      <ul class="mb-3">
+        <li><strong>CBU:</strong> 0000003100000000000000</li>
+        <li><strong>Alias:</strong> travelup.viajes</li>
+        <li><strong>Email:</strong> reservas@travelup.com</li>
+      </ul>
+
+      <p class="mb-3">
+        Una vez realizado el pago, enviá el comprobante por email indicando tu nombre,
+        apellido y si necesitás factura.
+      </p>
+
+      <p class="mb-0">
+        Un administrador validará el pago y confirmará tu reserva.
+      </p>
+    </div>
+
+    <div class="d-grid gap-2">
+      <button type="button" class="btn btn-primary" (click)="goToProfile()">
+        Ver mis reservas
+      </button>
+
+      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas"
+        (click)="resetReservationMessage()">
+        Cerrar
+      </button>
+    </div>} @else{
+
     @if (hasItem(); as hasCartItem) {
 
-      @if (item(); as cartItem) {
+    @if (item(); as cartItem) {
 
-        <div class="d-flex gap-3 mb-4">
-          <img
-            [src]="cartItem.package.imageUrl"
-            [alt]="cartItem.package.title"
-            class="cart-img rounded-3"
-          />
+    <div class="d-flex gap-3 mb-4">
+      <img [src]="cartItem.package.imageUrl" [alt]="cartItem.package.title" class="cart-img rounded-3" />
 
-          <div class="flex-grow-1">
-            <h3 class="h6 fw-bold mb-1">
-              {{ cartItem.package.title }}
-            </h3>
-
-            <p class="text-muted small mb-1">
-              <i class="bi bi-geo-alt"></i>
-              {{ cartItem.package.destination }}
-            </p>
-
-            <p class="fw-semibold mb-0">
-              {{ cartItem.package.price | currency:'ARS':'symbol':'1.0-0' }}
-            </p>
-          </div>
-        </div>
-
-        <div class="border rounded-4 p-3 mb-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="fw-semibold">
-              Pasajeros
-            </span>
-
-            <div class="btn-group">
-              <button
-                type="button"
-                class="btn btn-outline-secondary btn-sm"
-                (click)="decreasePassengers()"
-                [disabled]="cartItem.passengers <= 1"
-              >
-                <i class="bi bi-dash"></i>
-              </button>
-
-              <button
-                type="button"
-                class="btn btn-light btn-sm disabled"
-              >
-                {{ cartItem.passengers }}
-              </button>
-
-              <button
-                type="button"
-                class="btn btn-outline-secondary btn-sm"
-                (click)="increasePassengers()"
-              >
-                <i class="bi bi-plus"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="d-flex justify-content-between align-items-center">
-            <span class="text-muted">
-              Total
-            </span>
-
-            <span class="fw-bold fs-5">
-              {{ total() | currency:'ARS':'symbol':'1.0-0' }}
-            </span>
-          </div>
-        </div>
-
-        <div class="d-grid gap-2">
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="confirmReservation()"
-          >
-            Confirmar reserva
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-outline-danger"
-            (click)="removeItem()"
-          >
-            Eliminar paquete
-          </button>
-        </div>
-
-      }
-
-    } @else {
-
-      <div class="text-center py-5">
-        <i class="bi bi-cart-x fs-1 text-muted"></i>
-
-        <h3 class="h5 fw-bold mt-3">
-          Tu carrito está vacío
+      <div class="flex-grow-1">
+        <h3 class="h6 fw-bold mb-1">
+          {{ cartItem.package.title }}
         </h3>
 
-        <p class="text-muted mb-0">
-          Agregá un paquete para comenzar una reserva.
+        <p class="text-muted small mb-1">
+          <i class="bi bi-geo-alt"></i>
+          {{ cartItem.package.destination }}
+        </p>
+
+        <p class="fw-semibold mb-0">
+          {{ cartItem.package.price | currency:'ARS':'symbol':'1.0-0' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="border rounded-4 p-3 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="fw-semibold">
+          Pasajeros
+        </span>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="decreasePassengers()"
+            [disabled]="cartItem.passengers <= 1">
+            <i class="bi bi-dash"></i>
+          </button>
+
+          <button type="button" class="btn btn-light btn-sm disabled">
+            {{ cartItem.passengers }}
+          </button>
+
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="increasePassengers()"
+            [disabled]="!canIncreasePassengers()">
+            <i class="bi bi-plus"></i>
+          </button>
+
+        </div>
+        <p class="text-muted small mb-0">
+          Cupos restantes: {{ cartItem.package.availableSlots - cartItem.passengers }}
         </p>
       </div>
 
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted">
+          Total
+        </span>
+
+        <span class="fw-bold fs-5">
+          {{ total() | currency:'ARS':'symbol':'1.0-0' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="d-grid gap-2">
+      <button type="button" class="btn btn-primary" (click)="confirmReservation()">
+        Confirmar reserva
+      </button>
+
+      <button type="button" class="btn btn-outline-danger" (click)="removeItem()">
+        Eliminar paquete
+      </button>
+    </div>
+
     }
 
+    } @else {
+
+    <div class="text-center py-5">
+      <i class="bi bi-cart-x fs-1 text-muted"></i>
+
+      <h3 class="h5 fw-bold mt-3">
+        Tu carrito está vacío
+      </h3>
+
+      <p class="text-muted mb-0">
+        Agregá un paquete para comenzar una reserva.
+      </p>
+    </div>
+
+    }
+    }
   </div>
+
 </div>

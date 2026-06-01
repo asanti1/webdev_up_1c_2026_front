@@ -57,6 +57,7 @@ export class PackageDetail {
       price: pack.price,
       imageUrl: pack.imageUrl,
       destination: pack.destination.name,
+      availableSlots: pack.availableSlots,
     });
 
     this.router.navigateByUrl('/cart');

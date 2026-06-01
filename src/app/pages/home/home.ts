@@ -81,6 +81,9 @@ export class Home {
     const category = this.selectedCategory().toLowerCase();
 
     return this.packages().filter(pack => {
+      const hasSlots = pack.availableSlots > 0;
+      const isActive = pack.isActive;
+
       const matchesSearch =
         pack.title.toLowerCase().includes(term) ||
         pack.destination.name.toLowerCase().includes(term) ||
@@ -90,7 +93,7 @@ export class Home {
         category === 'todas' ||
         pack.categoryPackage.name.toLowerCase() === category;
 
-      return matchesSearch && matchesCategory;
+      return hasSlots && isActive && matchesSearch && matchesCategory;
     });
   });
 
